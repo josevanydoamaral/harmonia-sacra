@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import backgroundImage from '../assets/hero-img.png'
 import Header from './Header'
 import SearchBar from './SearchBar'
@@ -28,6 +29,8 @@ const songs = [
 ];
 
 const Home = () => {
+  const [search, setSearch] = useState("")
+  const filteredSongs = songs.filter(fs => fs.title.includes(search.toLocaleLowerCase()))
   return (
       <div className='relative min-h-screen bg-[#fcf2d9]'>
         <div style={{ backgroundImage: `url(${backgroundImage})` }} className='absolute top-0 left-0 w-full h-100 bg-no-repeat bg-fixed bg-center bg-cover opacity-50'>
@@ -35,9 +38,9 @@ const Home = () => {
         <div className='absolute w-full h-100 bg-linear-to-b from-transparent to-[#fcf2d9]'></div>
         <div className='relative z-10'>
           <Header />
-          <SearchBar />
+          <SearchBar value={search} onChange={setSearch}/>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-3">
-            {songs.map((song) => (<SongCard key={song.id} id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType}/>))}
+            {filteredSongs.map(song => <SongCard key={song.id} id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType} />)}
           </div>
           
         </div>

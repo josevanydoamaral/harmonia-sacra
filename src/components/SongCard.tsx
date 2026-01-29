@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion } from 'framer-motion';
 
 const Voices = {
     oneVoice: 1,
@@ -19,7 +20,7 @@ interface SongProps {
 
 const SongCard: React.FC<SongProps> = ({ id, title, composer, category, voices }) => {
     return (
-        <div className='flex w-full bg-white text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl ring-1 ring-stone-100 shadow-sm hover:cursor-pointer'>
+        <motion.div layout className='flex w-full bg-white text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl ring-1 ring-stone-100 shadow-sm hover:cursor-pointer transition-shadow'>
             <div className='bg-[#f5f1e8] p-3 rounded-xl'></div>
             <div className='flex flex-col'>
                 <h3 className='font-bold text-[#5c4d37]'>{title} - {composer}</h3>
@@ -29,7 +30,7 @@ const SongCard: React.FC<SongProps> = ({ id, title, composer, category, voices }
                 </div>
             </div>
 
-        </div>
+        </motion.div>
     )
 }
 

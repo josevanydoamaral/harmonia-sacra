@@ -6,15 +6,7 @@ import SearchBar from './SearchBar'
 import SongCard from './SongCard'
 import { motion } from 'framer-motion'
 import { db } from '../lib/firebase'
-
-const Voices = {
-  oneVoice: 1,
-  twoVoices: 2,
-  threeVoices: 3,
-  fourVoices: 4
-} as const
-
-type VoicesType = typeof Voices[keyof typeof Voices]
+import type { VoicesType } from '../types/song'
 
 const Home = () => {
   const [search, setSearch] = useState("")

@@ -15,7 +15,7 @@
     --color-accent-gold: #5c4d37;
     --color-border-subtle: #e7e5e4;
     --color-hover-button: #b45309;
-    --color-hover-card: #292524;
+    --color-hover-card: #faf7f2;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -30,8 +30,8 @@
     --color-accent-gold: #d4af37;
     --color-border-subtle: #d4af3733;
     --color-plholder: #78716c;
-    --color-hover-button: #b45309;
-    --color-hover-card: #292524;
+    --color-hover-button: #512a04;
+    --color-hover-card: #171311;
 }
 
 /* --color-border-subtle: rgba(212, 175, 55, 0.2); (Dourado translúcido para a barra e cards).

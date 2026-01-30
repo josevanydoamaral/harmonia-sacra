@@ -7,6 +7,7 @@ import SongCard from './SongCard'
 import { motion } from 'framer-motion'
 import { db } from '../lib/firebase'
 import type { VoicesType } from '../types/song'
+import { Link } from 'react-router-dom'
 
 const Home = () => {
   const [search, setSearch] = useState("")
@@ -17,7 +18,7 @@ const Home = () => {
 
     const unsubscribe = onSnapshot(songsCollection,
       (snapshot) => {
-    
+
         const songsData = snapshot.docs.map(
           doc => ({ id: doc.id, ...doc.data() }))
         setSongs(songsData)
@@ -38,12 +39,14 @@ const Home = () => {
 
       <div className='relative z-10'>
         <Header />
-
         <SearchBar value={search} onChange={setSearch} />
 
-        <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
-          {filteredSongs.map(song => <SongCard key={song.id} id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType} />)}
-        </motion.div>
+          <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
+            {filteredSongs.map(song => <Link to={`cantico/${song.id}`}>
+              <SongCard key={song.id} id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType} />
+            </Link>)}
+          </motion.div>
+       
 
       </div>
     </div>

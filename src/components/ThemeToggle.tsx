@@ -23,7 +23,7 @@ const ThemeToggle = () => {
     return (
         <button
             onClick={() => setIsDark(!isDark)}
-            className='p-2 rounded-full transition-all duration-300 hover:bg-stone-200 dark:hover:bg-slate-800'
+            className='p-2 rounded-full transition-all duration-300 hover:bg-stone-200 dark:hover:bg-hover-button'
             aria-label='Alternar modo de cor'
         >{isDark ? (
             <Sun className='text-yellow-500' size={20} />

@@ -5,7 +5,7 @@ import type { Song } from '../types/song';
 
 const SongCard: React.FC<Song> = ({ id, title, composer, category, voices }) => {
     return (
-        <motion.div layout className='flex w-full bg-card-surface text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl ring-1 ring-border-subtle shadow-sm hover:cursor-pointer transition-shadow'>
+        <motion.div layout whileTap={{scale: 0.98}} whileHover={{scale: 1.02}} className='flex w-full bg-card-surface text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl ring-1 ring-border-subtle shadow-sm hover:cursor-pointer hover:bg-hover-card transition-all duration-300'>
             <div className='bg-tag-surface p-3 rounded-xl'></div>
             <div className='flex flex-col'>
                 <h3 className='font-bold font-ti text-card-text'>{title} - {composer}</h3>

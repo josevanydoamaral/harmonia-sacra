@@ -29,12 +29,12 @@ const Home = () => {
 
   const filteredSongs = songs.filter(fs => fs.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
   return (
-    <div className='relative min-h-screen bg-[#f6e1ab]'>
+    <div className='relative min-h-screen bg-base-surface'>
 
       <div style={{ backgroundImage: `url(${backgroundImage})` }} className='absolute top-0 left-0 w-full h-100 bg-no-repeat bg-fixed bg-center bg-cover opacity-50'>
       </div>
 
-      <div className='absolute w-full h-100 bg-linear-to-b from-transparent to-[#f6e1ab]'></div>
+      <div className='absolute w-full h-100 bg-linear-to-b from-transparent to-base-surface'></div>
 
       <div className='relative z-10'>
         <Header />

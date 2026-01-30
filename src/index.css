@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+@theme {
+    /* Definição das fontes aqui */
+    --font-serif: "Playfair Display", Georgia, serif;
+
+    /* Definir cores personalizadas */
+    --color-base-surface: #f6e1ab;
+    --color-card-surface: white;
+    --color-card-text: #5c4d37;
+    --color-tag-surface: #f5f1e8;
+    --color-button-surface: #b38b4d;
+    --color-text-main: #5c4d37;
+    --color-accent-gold: #5c4d37;
+    --color-border-subtle: #e7e5e4;
+    --color-hover-button: #b45309;
+    --color-hover-card: #292524;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+    
+    --color-base-surface: #0c0a09;
+    --color-card-surface: #1c1917;
+    --color-card-text: #d6d3d1;
+    --color-tag-surface: #292524;
+    --color-button-surface: #44403c;
+    --color-text-main: #e7e5e4;
+    --color-accent-gold: #d4af37;
+    --color-border-subtle: #d4af3733;
+    --color-plholder: #78716c;
+    --color-hover-button: #b45309;
+    --color-hover-card: #292524;
+}
+
+/* --color-border-subtle: rgba(212, 175, 55, 0.2); (Dourado translúcido para a barra e cards).
+
+--color-placeholder: #78716c; (Stone 500 - visível mas discreto).
+
+--color-hover-button: #b45309; (Âmbar 700 para o hover do botão "Doe").
+
+--color-hover-card: #292524; (Stone 800 para o hover do card). */

@@ -1,8 +1,9 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
 
 @theme {
     /* Definição das fontes aqui */
-    --font-serif: "Playfair Display", Georgia, serif;
+    --font-title: "Playfair Display", Georgia, serif;
 
     /* Definir cores personalizadas */
     --color-base-surface: #f6e1ab;
@@ -20,7 +21,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 .dark {
-    
     --color-base-surface: #0c0a09;
     --color-card-surface: #1c1917;
     --color-card-text: #d6d3d1;

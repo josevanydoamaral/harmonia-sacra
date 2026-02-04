@@ -1,8 +1,11 @@
 import React from 'react'
+import TrackControl from './TrackControl'
 
 const SongDetail = () => {
   return (
-    <div className='min-h-screen'>SongDetail</div>
+    <div className='min-h-screen'>
+      <TrackControl/>
+    </div>
   )
 }
 

@@ -16,6 +16,14 @@
     --color-border-subtle: #e7e5e4;
     --color-hover-button: #b45309;
     --color-hover-card: #faf7f2;
+
+    /* Cores relacionadas ao TrackControl */
+    --color-track-surface: #FFFFFF;
+    --color-track-border: #E7E5E4;
+    --color-track-text: #292524;
+    --color-track-slider: #B38B4D;
+    --color-track-button: #F5F5F4;
+    --color-track-wave: #B38B4D;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -32,6 +40,14 @@
     --color-plholder: #78716c;
     --color-hover-button: #512a04;
     --color-hover-card: #171311;
+
+    /* Cores relacionadas ao TrackControl */
+    --color-track-surface: #0C0A09;
+    --color-track-border: #262626;
+    --color-track-text: #F8F5F2;
+    --color-track-slider: #B38B4D;
+    --color-track-button: #1C1917;
+    --color-track-wave: #B38B4D;
 }
 
 /* --color-border-subtle: rgba(212, 175, 55, 0.2); (Dourado translúcido para a barra e cards).

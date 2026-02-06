@@ -41,12 +41,14 @@ const Home = () => {
         <Header />
         <SearchBar value={search} onChange={setSearch} />
 
-          <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
-            {filteredSongs.map(song => <Link to={`cantico/${song.id}`}>
+        <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
+          {filteredSongs.map(song =>
+            <Link to={`cantico/${song.id}`}>
               <SongCard key={song.id} id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType} />
-            </Link>)}
-          </motion.div>
-       
+            </Link>
+          )}
+        </motion.div>
+
 
       </div>
     </div>

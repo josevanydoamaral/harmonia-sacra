@@ -14,3 +14,8 @@ export interface Song {
     category: string;
     voices: VoicesType;
 }
+
+export interface AdminActions extends Song {
+    onEdit(id: string) : void;
+    onDelete(id: string) : void;
+}

@@ -2,17 +2,11 @@ import { createRoutesFromElements, createBrowserRouter, RouterProvider, Route } 
 import Home from './components/Home'
 import SongDetail from './components/SongDetail'
 import Layout from './components/Layout'
+import AdminSongRow from './components/admin/AdminSongRow'
 
 function App() {
-
-  const routes = createBrowserRouter(createRoutesFromElements(
-    <Route path='/' element={<Layout />}>
-      <Route index element={<Home />} />
-      <Route path='/cantico/:id' element={<SongDetail />} />
-    </Route>
-  ))
   return (
-    <RouterProvider router={routes}/>
+    <AdminSongRow />
   )
 }
 

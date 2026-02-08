@@ -4,10 +4,11 @@ import SongDetail from './components/SongDetail'
 import Layout from './components/Layout'
 import AdminSongRow from './components/admin/AdminSongRow'
 import AdminDashboard from './components/admin/AdminDashboard'
+import SongForm from './components/admin/SongForm'
 
 function App() {
   return (
-    <AdminDashboard />
+    <SongForm />
   )
 }
 

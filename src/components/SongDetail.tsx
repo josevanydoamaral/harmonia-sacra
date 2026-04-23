@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import type { Song } from '../types/song';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import MasterControl from './MasterControl';
 
 
 const SongDetail = () => {
@@ -50,6 +51,9 @@ const SongDetail = () => {
         </iframe>
       </div>
       <div className="w-full lg:w-1/2 p-6">
+        <div className="my-8">
+          <MasterControl />
+        </div>
         <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano }/>
         <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto}/>
         <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor}/>

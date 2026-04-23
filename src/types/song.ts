@@ -22,12 +22,13 @@ export interface Song {
     pdfUrl?: string;
 }
 
+export interface TrackProps {
+    label: string;
+    audioUrl?: string;
+}
+
 export interface AdminActions extends Song {
     onEdit(id: string) : void;
     onDelete(id: string) : void;
 }
 
-export interface TrackProps {
-    label: string;
-    audioUrl?: string;
-}

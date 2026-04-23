@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import TrackControl from './TrackControl'
 import { useParams } from 'react-router-dom'
-import { Song } from '../types/song';
-import { collection, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import type { Song } from '../types/song';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 

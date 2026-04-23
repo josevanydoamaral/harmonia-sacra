@@ -1,7 +1,7 @@
 import { AudioLines, Volume2 } from 'lucide-react'
 import React from 'react'
 import { motion, scale } from 'framer-motion'
-import { TrackProps } from '../types/song'
+import type { TrackProps } from '../types/song'
 
 const TrackControl = ({ label, audioUrl} : TrackProps) => {
     return (

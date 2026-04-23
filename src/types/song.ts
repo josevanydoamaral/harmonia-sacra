@@ -13,9 +13,21 @@ export interface Song {
     composer: string;
     category: string;
     voices: VoicesType;
+    audioUrls?: {
+        soprano?: string;
+        alto?: string;
+        tenor?: string;
+        bass?: string;
+    },
+    pdfUrl?: string;
 }
 
 export interface AdminActions extends Song {
     onEdit(id: string) : void;
     onDelete(id: string) : void;
+}
+
+export interface TrackProps {
+    label: string;
+    audioUrl?: string;
 }

@@ -10,6 +10,7 @@ import MasterControl from './MasterControl';
 const SongDetail = () => {
   const { id } = useParams();
   const [song, setSong] = useState<Song | null>(null)
+  const [isPlaying, SetIsPlaying] = useState<Boolean>(false)
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -52,7 +53,7 @@ const SongDetail = () => {
       </div>
       <div className="w-full lg:w-1/2 p-6">
         <div className="my-8">
-          <MasterControl />
+          <MasterControl isPlaying={isPlaying} onToggle={() => SetIsPlaying(!isPlaying)} />
         </div>
         <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano }/>
         <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto}/>

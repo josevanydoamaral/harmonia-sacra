@@ -26,10 +26,10 @@ const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMute
                         <motion.button 
                             whileHover={{scale: 1.1}}  
                             whileTap={{ scale: 0.9 }} 
-                            className={`bg-track-button text-track-text aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer ${
+                            className={`aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer ${
                                 isMuted 
-                                ? "bg-accent-gold text-black shadow-[0_0_10px_rgba(212,175,55,0.5)]"
-                                : "text-accent-gold hover:bg-accent-gold/10"
+                                ? "bg-accent-gold text-base-surface shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+                                : "bg-track-button text-track-text hover:bg-accent-gold/10"
                             }`}
                             onClick={onMuteToggle}
                         >M</motion.button>

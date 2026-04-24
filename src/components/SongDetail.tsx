@@ -23,7 +23,7 @@ const SongDetail = () => {
 
   // Everytime  isPlaying changes this useEffect runs
   useEffect(() => {
-    
+
     allAudios.forEach(ref => {
       if (ref.current) {
         if (isPlaying) {
@@ -40,15 +40,37 @@ const SongDetail = () => {
     alto: 0.8,
     tenor: 0.8,
     bass: 0.8
-  }) 
+  })
 
-  // When a song volume value changes this useEffect is executed
+  const [muted, setMuted] = useState({
+    soprano: false,
+    alto: false,
+    tenor: false,
+    bass: false
+  });
+
+  // If volumes and muted changed run this
   useEffect(() => {
-    if (sopranoRef.current) sopranoRef.current.volume = volumes.soprano
-    if (altoRef.current) altoRef.current.volume = volumes.alto
-    if (tenorRef.current) tenorRef.current.volume = volumes.tenor
-    if (bassRef.current) bassRef.current.volume = volumes.bass
-  }, [volumes])
+    if (sopranoRef.current) {
+      sopranoRef.current.volume = volumes.soprano
+      sopranoRef.current.muted = muted.soprano
+    }
+
+    if (altoRef.current) {
+      altoRef.current.volume = volumes.alto
+      altoRef.current.muted = muted.alto
+    }
+
+    if (tenorRef.current) {
+      tenorRef.current.volume = volumes.tenor
+      tenorRef.current.muted = muted.tenor
+    }
+
+    if (bassRef.current) {
+      bassRef.current.volume = volumes.bass
+      bassRef.current.muted = muted.bass
+    }
+  }, [volumes, muted])
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -68,24 +90,24 @@ const SongDetail = () => {
           console.warn("Cântico não encontrado no banco de dados.");
         }
       } catch (error) {
-          console.error("Erro ao procurar o cântico no Firestore: ", error);
+        console.error("Erro ao procurar o cântico no Firestore: ", error);
       }
     }
     fetchSong()
   }, [id])
 
-  if (!song) return <div className="p-10 text-white">A carregar cântico...</div>; 
+  if (!song) return <div className="p-10 text-white">A carregar cântico...</div>;
 
   return (
     <div className='min-h-screen flex flex-col lg:flex-row'>
-      
+
       <div className="w-full lg:w-1/2 h-250 lg:h-screen p-4 shrink-0">
-        <iframe 
+        <iframe
           className='w-full h-250 bg-white rounded-lg shadow-2xl border border-accent-gold/20'
           src={song.pdfUrl || ""}
           title={song.title}
-          style={{ border: 'none'}}
-          >
+          style={{ border: 'none' }}
+        >
           <p>O seu navegador não suporta iframes. <a href={song.pdfUrl}>Clique aqui para descarregar o PDF.</a></p>
         </iframe>
       </div>
@@ -93,10 +115,10 @@ const SongDetail = () => {
         <div className="my-8">
           <MasterControl isPlaying={isPlaying} onToggle={() => SetIsPlaying(!isPlaying)} />
         </div>
-        <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano } volume={volumes.soprano} onVolumeChange={(v) => SetVolumes({...volumes, soprano: v}) }/>
-        <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto} volume={volumes.alto} onVolumeChange={(v) => SetVolumes({...volumes, alto: v})}/>
-        <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor} volume={volumes.tenor} onVolumeChange={(v) => SetVolumes({...volumes, tenor: v})}/>
-        <TrackControl label="Baixo" audioUrl={song.audioUrls?.bass} volume={volumes.bass} onVolumeChange={(v) => SetVolumes({...volumes, bass: v}) }/>
+        <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano} volume={volumes.soprano} onVolumeChange={(v) => SetVolumes({ ...volumes, soprano: v })} isMuted={muted.soprano} onMuteToggle={() => { setMuted({ ...muted, soprano: !muted.soprano }) }} />
+        <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto} volume={volumes.alto} onVolumeChange={(v) => SetVolumes({ ...volumes, alto: v })} isMuted={muted.alto} onMuteToggle={() => setMuted({ ...muted, alto: !muted.alto })} />
+        <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor} volume={volumes.tenor} onVolumeChange={(v) => SetVolumes({ ...volumes, tenor: v })} isMuted={muted.tenor} onMuteToggle={() => setMuted({ ...muted, tenor: !muted.tenor })} />
+        <TrackControl label="Baixo" audioUrl={song.audioUrls?.bass} volume={volumes.bass} onVolumeChange={(v) => SetVolumes({ ...volumes, bass: v })} isMuted={muted.bass} onMuteToggle={() => setMuted({ ...muted, bass: !muted.bass })} />
       </div>
 
       <audio ref={sopranoRef} src={song.audioUrls?.soprano} />

@@ -3,7 +3,7 @@ import React from 'react'
 import { motion, scale } from 'framer-motion'
 import type { TrackProps } from '../types/song'
 
-const TrackControl = ({ label, audioUrl, volume, onVolumeChange} : TrackProps) => {
+const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMuteToggle} : TrackProps) => {
     return (
         <div className='relative flex justify-center max-w-lg mx-auto  p-3'>
             <div className='flex flex-col w-full p-3 bg-track-surface rounded-md shadow-xl border border-track-border'>
@@ -23,7 +23,16 @@ const TrackControl = ({ label, audioUrl, volume, onVolumeChange} : TrackProps) =
                         <AudioLines className='text-track-wave' width='100%' />
                     </div>
                     <div className='flex items-center gap-2'>
-                        <motion.button whileHover={{scale: 1.1}}  whileTap={{ scale: 0.9 }} className='bg-track-button text-track-text aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer'>M</motion.button>
+                        <motion.button 
+                            whileHover={{scale: 1.1}}  
+                            whileTap={{ scale: 0.9 }} 
+                            className={`bg-track-button text-track-text aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer ${
+                                isMuted 
+                                ? "bg-accent-gold text-black shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+                                : "text-accent-gold hover:bg-accent-gold/10"
+                            }`}
+                            onClick={onMuteToggle}
+                        >M</motion.button>
                         <motion.button whileHover={{scale: 1.1}} whileTap={{ scale: 0.9 }} className='bg-track-button text-track-text aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer'>S</motion.button>
 
                     </div>

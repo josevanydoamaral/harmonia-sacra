@@ -1,12 +1,21 @@
 import React from 'react'
 import { Play, Pause } from 'lucide-react'
 
-const MasterControl = () => {
+// Interface with master control play and pause function
+interface MasterControlProps {
+  isPlaying: boolean;
+  onToggle: () => void;
+}
+
+const MasterControl = ({ isPlaying, onToggle }: MasterControlProps) => {
     return (
         <div className='flex items-center gap-6 p-4 bg-track-surface rounded-xl border border-accent-gold/20 shadow-lg'>
-            <button className='text-accent-gold hover:scale-110 transition-transform cursor-pointer'>
-                <Play fill="currentColor" size={32} />
-
+            <button className='text-accent-gold hover:scale-110 transition-transform cursor-pointer' onClick={onToggle}>
+                {!isPlaying ? (
+                    <Play fill="currentColor" size={32} />
+                ) : (
+                    <Pause fill="currentColor" size={32}/>
+                )}   
             </button>
 
             <div className='flex-1 flex flex-col gap-3'>

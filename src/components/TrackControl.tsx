@@ -3,7 +3,7 @@ import React from 'react'
 import { motion, scale } from 'framer-motion'
 import type { TrackProps } from '../types/song'
 
-const TrackControl = ({ label, audioUrl} : TrackProps) => {
+const TrackControl = ({ label, audioUrl, volume, onVolumeChange} : TrackProps) => {
     return (
         <div className='relative flex justify-center max-w-lg mx-auto  p-3'>
             <div className='flex flex-col w-full p-3 bg-track-surface rounded-md shadow-xl border border-track-border'>
@@ -11,7 +11,13 @@ const TrackControl = ({ label, audioUrl} : TrackProps) => {
                 <div className="grid grid-cols-[auto_1fr_auto] gap-3 items-center mt-3">
                     <div className="flex items-center gap-2">
                         <button><Volume2 className='text-track-slider' width={20} /></button>
-                        <input className='text-amber-50 accent-track-slider cursor-pointer' style={{ maxWidth: "70px", maxHeight: "5px" }} type="range" name="" id="" />
+                        <input className='text-amber-50 accent-track-slider cursor-pointer' style={{ maxWidth: "70px", maxHeight: "5px" }} 
+                            type="range" 
+                            min="0" 
+                            max="1" 
+                            step="0.1" 
+                            value={volume}
+                            onChange={(e) => onVolumeChange(parseFloat(e.target.value)) } />
                     </div>
                     <div className="flex items-center justify-center gap-2 w-full">
                         <AudioLines className='text-track-wave' width='100%' />

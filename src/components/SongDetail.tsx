@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import TrackControl from './TrackControl'
 import { useParams } from 'react-router-dom'
 import type { Song } from '../types/song';
@@ -10,7 +10,45 @@ import MasterControl from './MasterControl';
 const SongDetail = () => {
   const { id } = useParams();
   const [song, setSong] = useState<Song | null>(null)
-  const [isPlaying, SetIsPlaying] = useState<Boolean>(false)
+  const [isPlaying, SetIsPlaying] = useState(false)
+
+  // References for each voices
+  const sopranoRef = useRef<HTMLAudioElement | null>(null);
+  const altoRef = useRef<HTMLAudioElement | null>(null);
+  const tenorRef = useRef<HTMLAudioElement | null>(null);
+  const bassRef = useRef<HTMLAudioElement | null>(null);
+
+  // List of all audio elements
+  const allAudios = [sopranoRef, altoRef, tenorRef, bassRef];
+
+  // Everytime  isPlaying changes this useEffect runs
+  useEffect(() => {
+    
+    allAudios.forEach(ref => {
+      if (ref.current) {
+        if (isPlaying) {
+          ref.current.play();
+        } else {
+          ref.current.pause();
+        }
+      }
+    })
+  }, [isPlaying]);
+
+  const [volumes, SetVolumes] = useState({
+    soprano: 0.8, // initial volume value = 80%
+    alto: 0.8,
+    tenor: 0.8,
+    bass: 0.8
+  }) 
+
+  // When a song volume value changes this useEffect is executed
+  useEffect(() => {
+    if (sopranoRef.current) sopranoRef.current.volume = volumes.soprano
+    if (altoRef.current) altoRef.current.volume = volumes.alto
+    if (tenorRef.current) tenorRef.current.volume = volumes.tenor
+    if (bassRef.current) bassRef.current.volume = volumes.bass
+  }, [volumes])
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -55,11 +93,16 @@ const SongDetail = () => {
         <div className="my-8">
           <MasterControl isPlaying={isPlaying} onToggle={() => SetIsPlaying(!isPlaying)} />
         </div>
-        <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano }/>
-        <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto}/>
-        <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor}/>
-        <TrackControl label="Baixo" audioUrl={song.audioUrls?.bass}/>
+        <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano } volume={volumes.soprano} onVolumeChange={(v) => SetVolumes({...volumes, soprano: v}) }/>
+        <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto} volume={volumes.alto} onVolumeChange={(v) => SetVolumes({...volumes, alto: v})}/>
+        <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor} volume={volumes.tenor} onVolumeChange={(v) => SetVolumes({...volumes, tenor: v})}/>
+        <TrackControl label="Baixo" audioUrl={song.audioUrls?.bass} volume={volumes.bass} onVolumeChange={(v) => SetVolumes({...volumes, bass: v}) }/>
       </div>
+
+      <audio ref={sopranoRef} src={song.audioUrls?.soprano} />
+      <audio ref={altoRef} src={song.audioUrls?.alto} />
+      <audio ref={tenorRef} src={song.audioUrls?.tenor} />
+      <audio ref={bassRef} src={song.audioUrls?.bass} />
     </div>
   )
 }

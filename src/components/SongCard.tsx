@@ -1,34 +1,21 @@
 import React from 'react'
+import { motion } from 'framer-motion';
+import type { Song } from '../types/song';
 
-const Voices = {
-    oneVoice: 1,
-    twoVoices: 2,
-    threeVoices: 3,
-    fourVoices: 4
-} as const
 
-type VoicesType = typeof Voices[keyof typeof Voices]
-
-interface SongProps {
-    title: string;
-    composer: string;
-    category: string;
-    voices: VoicesType;
-}
-
-const SongCard: React.FC<SongProps> = ({ title, composer, category, voices }) => {
+const SongCard: React.FC<Song> = ({ id, title, composer, category, voices }) => {
     return (
-        <div className='flex w-full bg-white text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl shadow-sm'>
-            <div className='bg-[#f5f1e8] p-3 rounded-xl'></div>
+        <motion.div layout whileTap={{scale: 0.98}} whileHover={{scale: 1.02}} className='flex w-full bg-card-surface text-sm justify-normal items-center px-3 py-2 gap-4 rounded-2xl ring-1 ring-border-subtle shadow-sm hover:cursor-pointer hover:bg-hover-card transition-all duration-300'>
+            <div className='bg-tag-surface p-3 rounded-xl'></div>
             <div className='flex flex-col'>
-                <h3 className='font-bold text-[#5c4d37]'>{title} - {composer}</h3>
-                <div className="flex text-xs text-stone-400 gap-2">
-                    <span className='bg-[#f5f1e8] px-2 py-1 rounded-md'>{category}</span>
-                    <span className='bg-stone-100 tracking-wider px-2 py-1 rounded-md'>{voices} {voices == 1 ? 'voice' : 'voices'}</span>
+                <h3 className='font-bold font-ti text-card-text'>{title} - {composer}</h3>
+                <div className="flex text-xs text-stone-400 gap-2 mt-2">
+                    <span className='bg-tag-surface px-2 py-1 rounded-md'>{category}</span>
+                    <span className='bg-tag-surface tracking-wider px-2 py-1 rounded-md'>{voices} {voices == 1 ? 'voice' : 'voices'}</span>
                 </div>
             </div>
 
-        </div>
+        </motion.div>
     )
 }
 

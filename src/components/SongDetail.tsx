@@ -49,28 +49,31 @@ const SongDetail = () => {
     bass: false
   });
 
+  const [soloVoice, setSoloVoice] = useState<string | null>(null);
+
   // If volumes and muted changed run this
+  // An audio component should be muted only if there if mutted button is selected or if there is a solo button active in any of the other components. And when we click at the solo button in a place where mute button is active it disables mute and play the solo.
   useEffect(() => {
     if (sopranoRef.current) {
       sopranoRef.current.volume = volumes.soprano
-      sopranoRef.current.muted = muted.soprano
+      sopranoRef.current.muted = muted.soprano || (soloVoice !== null && soloVoice !== 'soprano')
     }
 
     if (altoRef.current) {
       altoRef.current.volume = volumes.alto
-      altoRef.current.muted = muted.alto
+      altoRef.current.muted = muted.alto || (soloVoice !== null && soloVoice !== 'alto')
     }
 
     if (tenorRef.current) {
       tenorRef.current.volume = volumes.tenor
-      tenorRef.current.muted = muted.tenor
+      tenorRef.current.muted = muted.tenor || (soloVoice !== null && soloVoice !== 'tenor')
     }
 
     if (bassRef.current) {
       bassRef.current.volume = volumes.bass
-      bassRef.current.muted = muted.bass
+      bassRef.current.muted = muted.bass || (soloVoice !== null && soloVoice !== 'bass')
     }
-  }, [volumes, muted])
+  }, [volumes, muted, soloVoice])
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -112,13 +115,84 @@ const SongDetail = () => {
         </iframe>
       </div>
       <div className="w-full lg:w-1/2 p-6">
+
         <div className="my-8">
           <MasterControl isPlaying={isPlaying} onToggle={() => SetIsPlaying(!isPlaying)} />
         </div>
-        <TrackControl label="Soprano" audioUrl={song.audioUrls?.soprano} volume={volumes.soprano} onVolumeChange={(v) => SetVolumes({ ...volumes, soprano: v })} isMuted={muted.soprano} onMuteToggle={() => { setMuted({ ...muted, soprano: !muted.soprano }) }} />
-        <TrackControl label="Contralto" audioUrl={song.audioUrls?.alto} volume={volumes.alto} onVolumeChange={(v) => SetVolumes({ ...volumes, alto: v })} isMuted={muted.alto} onMuteToggle={() => setMuted({ ...muted, alto: !muted.alto })} />
-        <TrackControl label="Tenor" audioUrl={song.audioUrls?.tenor} volume={volumes.tenor} onVolumeChange={(v) => SetVolumes({ ...volumes, tenor: v })} isMuted={muted.tenor} onMuteToggle={() => setMuted({ ...muted, tenor: !muted.tenor })} />
-        <TrackControl label="Baixo" audioUrl={song.audioUrls?.bass} volume={volumes.bass} onVolumeChange={(v) => SetVolumes({ ...volumes, bass: v })} isMuted={muted.bass} onMuteToggle={() => setMuted({ ...muted, bass: !muted.bass })} />
+
+        <TrackControl 
+          label="Soprano" 
+          audioUrl={song.audioUrls?.soprano} 
+          volume={volumes.soprano} 
+          onVolumeChange={(v) => SetVolumes({ ...volumes, soprano: v })} 
+          isMuted={muted.soprano} 
+          onMuteToggle={() => setMuted({ ...muted, soprano: !muted.soprano })} 
+          isSolo={soloVoice === 'soprano'}
+          onSoloToggle={() => {
+            const isCurrentlySolo = soloVoice === 'soprano';
+            setSoloVoice(isCurrentlySolo ? null : 'soprano');
+            if (!isCurrentlySolo) {
+              setMuted((prev) => ({ ...prev, soprano: false }))
+            }
+          }}
+
+        />
+
+        <TrackControl 
+          label="Contralto" 
+          audioUrl={song.audioUrls?.alto} 
+          volume={volumes.alto} 
+          onVolumeChange={(v) => SetVolumes({ ...volumes, alto: v })} 
+          isMuted={muted.alto}
+          onMuteToggle={() => setMuted({ ...muted, alto: !muted.alto })}
+          isSolo={soloVoice === 'alto'}
+          onSoloToggle={() => {
+            const isCurrentlySolo = soloVoice === 'alto';
+            setSoloVoice(isCurrentlySolo ? null : 'alto')
+            if (!isCurrentlySolo) {
+              setMuted((prev) => ({ ...prev, alto: false }))
+            }
+          }}
+          
+
+        />
+
+        <TrackControl 
+          label="Tenor" 
+          audioUrl={song.audioUrls?.tenor} 
+          volume={volumes.tenor} 
+          onVolumeChange={(v) => SetVolumes({ ...volumes, tenor: v })}
+          isMuted={muted.tenor} 
+          onMuteToggle={() => setMuted({ ...muted, tenor: !muted.tenor })} 
+          isSolo={soloVoice === 'tenor'}
+          onSoloToggle={() => {
+            const isCurrentlySolo = soloVoice === 'tenor';
+            setSoloVoice(isCurrentlySolo ? null : 'tenor');
+            if (!isCurrentlySolo) {
+              setMuted((prev) => ({ ...prev, tenor: false }))
+            }
+          }}
+         
+
+        />
+
+        <TrackControl 
+          label="Baixo" 
+          audioUrl={song.audioUrls?.bass} 
+          volume={volumes.bass} 
+          onVolumeChange={(v) => SetVolumes({ ...volumes, bass: v })} 
+          isMuted={muted.bass} 
+          onMuteToggle={() => setMuted({ ...muted, bass: !muted.bass })} 
+          isSolo={soloVoice === 'bass'}
+          onSoloToggle={() => {
+            const isCurrentlySolo = soloVoice === 'bass'
+            setSoloVoice(isCurrentlySolo ? null : 'bass')
+            if (!isCurrentlySolo) {
+              setMuted((prev) => ({ ...prev, bass: false }))
+            }
+          }}
+
+        />
       </div>
 
       <audio ref={sopranoRef} src={song.audioUrls?.soprano} />

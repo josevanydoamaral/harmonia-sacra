@@ -3,7 +3,7 @@ import React from 'react'
 import { motion, scale } from 'framer-motion'
 import type { TrackProps } from '../types/song'
 
-const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMuteToggle} : TrackProps) => {
+const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMuteToggle, isSolo, onSoloToggle} : TrackProps) => {
     return (
         <div className='relative flex justify-center max-w-lg mx-auto  p-3'>
             <div className='flex flex-col w-full p-3 bg-track-surface rounded-md shadow-xl border border-track-border'>
@@ -23,6 +23,7 @@ const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMute
                         <AudioLines className='text-track-wave' width='100%' />
                     </div>
                     <div className='flex items-center gap-2'>
+                        {/* MUTE */}
                         <motion.button 
                             whileHover={{scale: 1.1}}  
                             whileTap={{ scale: 0.9 }} 
@@ -33,7 +34,21 @@ const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMute
                             }`}
                             onClick={onMuteToggle}
                         >M</motion.button>
-                        <motion.button whileHover={{scale: 1.1}} whileTap={{ scale: 0.9 }} className='bg-track-button text-track-text aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer'>S</motion.button>
+                        {/* MUTE */}
+
+                        {/* SOLO */}
+                        <motion.button 
+                            whileHover={{scale: 1.1}} 
+                            whileTap={{ scale: 0.9 }} 
+                            className={`aspect-square px-2 py-1 rounded-md shadow-md ring-1 ring-accent-gold cursor-pointer ${
+                                isSolo
+                                ? "bg-accent-gold text-base-surface shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+                                : "bg-track-button text-track-text hover:bg-accent-gold/10"
+                            }`}
+                            onClick={onSoloToggle}
+                        
+                        >S</motion.button>
+                        {/* SOLO */}
 
                     </div>
                 </div>

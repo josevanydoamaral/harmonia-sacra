@@ -29,6 +29,8 @@ export interface TrackProps {
     onVolumeChange: (value: number) => void;
     isMuted: boolean;
     onMuteToggle: () => void;
+    isSolo: boolean;
+    onSoloToggle: () => void;
 }
 
 export interface AdminActions extends Song {

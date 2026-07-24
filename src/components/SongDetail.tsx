@@ -117,7 +117,7 @@ const SongDetail = () => {
   return (
     
     <div className='min-h-screen flex flex-col lg:flex-row'>
-      
+
       <div className="w-full lg:w-1/2 h-[650px] lg:h-screen p-4 shrink-0">
         <iframe
           className='w-full h-full bg-white rounded-lg shadow-2xl border border-accent-gold/20'

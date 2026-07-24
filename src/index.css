@@ -6,24 +6,24 @@
     --font-title: "Playfair Display", Georgia, serif;
 
     /* Definir cores personalizadas */
-    --color-base-surface: #f6e1ab;
-    --color-card-surface: white;
-    --color-card-text: #5c4d37;
-    --color-tag-surface: #f5f1e8;
-    --color-button-surface: #b38b4d;
-    --color-text-main: #5c4d37;
-    --color-accent-gold: #5c4d37;
-    --color-border-subtle: #e7e5e4;
-    --color-hover-button: #b45309;
-    --color-hover-card: #faf7f2;
+    --color-base-surface: #faf6ee;
+    --color-card-surface: #ffffff;
+    --color-card-text: #3d3527;
+    --color-tag-surface: #f3eee3;
+    --color-button-surface: #c9a84c;
+    --color-text-main: #3d3527;
+    --color-accent-gold: #b8923d;
+    --color-border-subtle: #e8e1d3;
+    --color-hover-button: #a98636;
+    --color-hover-card: #fdfbf6;
 
     /* Cores relacionadas ao TrackControl */
     --color-track-surface: #FFFFFF;
-    --color-track-border: #E7E5E4;
-    --color-track-text: #292524;
-    --color-track-slider: #B38B4D;
-    --color-track-button: #F5F5F4;
-    --color-track-wave: #B38B4D;
+    --color-track-border: #e8e1d3;
+    --color-track-text: #3d3527;
+    --color-track-slider: #c9a84c;
+    --color-track-button: #f3eee3;
+    --color-track-wave: #c9a84c;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

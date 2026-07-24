@@ -51,6 +51,19 @@ const SongDetail = () => {
 
   const [soloVoice, setSoloVoice] = useState<string | null>(null);
 
+  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [duration, setDuration] = useState<number>(0)
+
+  const handleSeek = (newTime: number) => {
+    setCurrentTime(newTime)
+
+    sopranoRef.current && (sopranoRef.current.currentTime = newTime)
+    altoRef.current && (altoRef.current.currentTime = newTime)
+    tenorRef.current && (tenorRef.current.currentTime = newTime)
+    bassRef.current && (bassRef.current.currentTime = newTime)
+    
+  }
+
   // If volumes and muted changed run this
   // An audio component should be muted only if there if mutted button is selected or if there is a solo button active in any of the other components. And when we click at the solo button in a place where mute button is active it disables mute and play the solo.
   useEffect(() => {
@@ -117,7 +130,7 @@ const SongDetail = () => {
       <div className="w-full lg:w-1/2 p-6">
 
         <div className="my-8">
-          <MasterControl isPlaying={isPlaying} onToggle={() => SetIsPlaying(!isPlaying)} />
+          <MasterControl isPlaying={isPlaying} currentTime={currentTime} duration={duration} onSeek={handleSeek} onToggle={() => SetIsPlaying(!isPlaying)} />
         </div>
 
         <TrackControl 
@@ -195,7 +208,12 @@ const SongDetail = () => {
         />
       </div>
 
-      <audio ref={sopranoRef} src={song.audioUrls?.soprano} />
+      <audio 
+        ref={sopranoRef} 
+        src={song.audioUrls?.soprano}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)} 
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+      />
       <audio ref={altoRef} src={song.audioUrls?.alto} />
       <audio ref={tenorRef} src={song.audioUrls?.tenor} />
       <audio ref={bassRef} src={song.audioUrls?.bass} />

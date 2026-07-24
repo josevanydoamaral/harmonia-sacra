@@ -1,13 +1,17 @@
 import React from 'react'
 import { Play, Pause } from 'lucide-react'
+import { formatTime } from '../utils/utils';
 
 // Interface with master control play and pause function
 interface MasterControlProps {
   isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  onSeek: (time: number) => void
   onToggle: () => void;
 }
 
-const MasterControl = ({ isPlaying, onToggle }: MasterControlProps) => {
+const MasterControl = ({ isPlaying, currentTime, duration, onSeek, onToggle }: MasterControlProps) => {
     return (
         <div className='flex items-center gap-6 p-4 bg-track-surface rounded-xl border border-accent-gold/20 shadow-lg'>
             <button className='text-accent-gold hover:scale-110 transition-transform cursor-pointer' onClick={onToggle}>
@@ -23,8 +27,9 @@ const MasterControl = ({ isPlaying, onToggle }: MasterControlProps) => {
                     type="range"
                     className='w-full h-1.5 bg-accent-gold/10 rounded-lg appearance-none cursor-pointer accent-accent-gold'
                     min="0"
-                    max="100"
-                    defaultValue="0"
+                    max={duration}
+                    value={currentTime}
+                    onChange={(e) => onSeek(Number(e.target.value))}
                 />
                 <div className="flex justify-between text-[10px] uppercase tracking-widest text-accent-gold/40 font-bold">
                     <span>Início</span>
@@ -36,7 +41,8 @@ const MasterControl = ({ isPlaying, onToggle }: MasterControlProps) => {
 
             <div className='text-right'>
                 <span className=' block text-xs font-mono text-accent-gold/70'>
-                    00:00 / 03:45
+                    {formatTime(currentTime)} / 
+                    {formatTime(duration)}
                 </span>
             </div>
         </div>

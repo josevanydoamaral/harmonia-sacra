@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import TrackControl from './TrackControl'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import type { Song } from '../types/song';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -115,8 +115,9 @@ const SongDetail = () => {
   if (!song) return <div className="p-10 text-white">A carregar cântico...</div>;
 
   return (
+    
     <div className='min-h-screen flex flex-col lg:flex-row'>
-
+      
       <div className="w-full lg:w-1/2 h-[650px] lg:h-screen p-4 shrink-0">
         <iframe
           className='w-full h-full bg-white rounded-lg shadow-2xl border border-accent-gold/20'

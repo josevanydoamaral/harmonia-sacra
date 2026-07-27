@@ -3,17 +3,8 @@ import React from 'react'
 
 const Dashboard = () => {
     return (
-        <main className='container-principal py-8 px-4 max-w-6xl mx-auto w-full min-h-screen'>
-            <header className='flex justify-between items-center mb-8'>
-                <div>
-                    <h1 className='text-2xl md:text-3xl font-bold tracking-bold font-title text-accent-gold'>Harmonia Sacra</h1>
-                    <p className='text-text-main/60 text-sm mt-0.5'>Painel Administrativo</p>
-                </div>
-                <div className='flex items-center gap-3'>
-                    <span className='text-text-main/60'>Josevany Amaral</span>
-                    <div className='w-10 h-10 rounded-full bg-card-surface border border-border-subtle flex items-center justify-center font-semibold text-sm text-text-main'>JS</div>
-                </div>
-            </header>
+        <>
+
             <section className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-8'>
                 <article className="bg-card-surface border border-border-subtle p-5 rounded-2xl">
                     <span className='text-sm text-text-main/60 block mb-2'>Total de Cânticos</span>
@@ -51,7 +42,7 @@ const Dashboard = () => {
                                 <span className='font-semibold text-text-main'>
                                     Ave Maria - Schubert
                                 </span>
-                      
+
                             </td>
                             <td className='p-4'>
                                 <span className='text-text-main/60'>Pentecostes</span>
@@ -77,10 +68,10 @@ const Dashboard = () => {
                         <tr className="border-b border-border-subtle/50 last:border-b-0 hover:bg-white/5 transition">
                             <td className='p-4'>
                                 <span className='font-semibold text-text-main'>
-                                    Ave Maria - 
+                                    Ave Maria -
                                 </span>
                                 <span className='text-text-main/50 font-normal'>
-                                     Schubert
+                                    Schubert
                                 </span>
                             </td>
                             <td className='p-4'>
@@ -102,7 +93,11 @@ const Dashboard = () => {
                     </tbody>
                 </table>
             </div>
-        </main>
+
+        </>
+
+
+
     )
 }
 

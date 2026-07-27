@@ -9,7 +9,7 @@ const Layout = () => {
     <>
       {isHome ? <Home /> :
         <div className='bg-base-surface'>
-          {/* <Header /> */}
+          <Header />
 
           <Outlet />
         </div>

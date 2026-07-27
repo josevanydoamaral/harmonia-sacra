@@ -11,7 +11,7 @@ const ThemeToggle = () => {
             return savedTheme === 'dark';
         }
 
-        return window.matchMedia('(preferes-color-scheme: dark)').matches;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
     })
 
     useEffect(() => {

@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { db } from '../lib/firebase'
 import type { VoicesType } from '../types/song'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const Home = () => {
   const [search, setSearch] = useState("")
@@ -28,10 +29,12 @@ const Home = () => {
     return () => unsubscribe();
   }, [])
 
+  const {user, profile, loading } = useAuth();
+  console.log("Sessão ativa: ", { user, profile, loading })
+
   const filteredSongs = songs.filter(fs => fs.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
   return (
     <div className='relative min-h-screen bg-base-surface'>
-
       <div style={{ backgroundImage: `url(${backgroundImage})` }} className='absolute top-0 left-0 w-full h-100 bg-no-repeat bg-fixed bg-center bg-cover opacity-50'>
       </div>
 

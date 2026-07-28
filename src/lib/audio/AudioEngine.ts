@@ -96,8 +96,18 @@ class AudioEngine {
         this.isPlaying = false;
     }
 
-    seek(time: number) {
+    seek(time: number): void {
+        const wasPlaying = this.isPlaying;
 
+        if (wasPlaying) {
+            this.pause()
+        }
+
+        this.pauseOffset = Math.max(0, time)
+
+        
+        if (wasPlaying) this.play()
+        
     }
 
     setVolume(voice: string, value:number): void {

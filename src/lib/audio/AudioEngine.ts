@@ -1,3 +1,5 @@
+import { time } from "console";
+
 class AudioEngine {
     private audioContext: AudioContext | null = null;
     private audioBuffers: Map<string, AudioBuffer> = new Map();
@@ -79,7 +81,19 @@ class AudioEngine {
     }
 
     pause(): void {
+        if (!this.isPlaying) return;
 
+        this.pauseOffset = this.getElapsedTime();
+
+        for (const sourceNode of this.sourceNodes.values()) {
+            try {
+                sourceNode.stop();
+            } catch(err) {
+
+            }
+        }
+        this.sourceNodes.clear()
+        this.isPlaying = false;
     }
 
     seek(time: number) {
@@ -99,7 +113,13 @@ class AudioEngine {
     }
 
     getElapsedTime(): number {
-        return 0;
+        if (!this.audioContext) return 0;
+        const time = 
+            this.isPlaying 
+            ? this.audioContext.currentTime - this.startTime 
+            : this.pauseOffset
+
+        return time
     }
 
     destroy(): void {

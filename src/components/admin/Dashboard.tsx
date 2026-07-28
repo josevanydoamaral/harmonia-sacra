@@ -2,6 +2,9 @@ import { SquarePen, Trash2 } from 'lucide-react'
 import React from 'react'
 import { useSongs } from '../../hooks/useSongs'
 import { getAudioStatus } from '../../utils/songUtils';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+
 
 const Dashboard = () => {
     const { songs, loading, error } = useSongs();
@@ -11,6 +14,17 @@ const Dashboard = () => {
     const totalSongs = songs.length;
     const incompleteSongs = songs.filter(s => getAudioStatus(s) !== "Completo").length
     const totalCategories = new Set(songs.map(s => s.category).filter(Boolean)).size;
+
+    const handleDelete = async (id: string): Promise<void> => {
+        if(window.confirm("Tem a certeza que quer eliminar este cântico?")) {
+            try {
+                await deleteDoc(doc(db, 'songs', id));
+                window.alert("Cântico apagado com sucesso");
+            } catch (error) {
+                window.alert("Erro ao apagar cântico.");
+            }
+        }
+    }
 
     return (
         <>
@@ -131,7 +145,9 @@ const Dashboard = () => {
                                         rounded-lg 
                                         transition 
                                         hover:text-text-main 
-                                        cursor-pointer'>
+                                        cursor-pointer'
+                                        onClick={() => handleDelete(song.id)}
+                                        >
 
                                                     <Trash2 className='
                                             w-5 

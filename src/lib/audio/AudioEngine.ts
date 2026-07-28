@@ -10,6 +10,31 @@ class AudioEngine {
     async loadTracks(urls: Record<string, string>): Promise<void>
     {
 
+        if (!this.audioContext) {
+            this.audioContext = new AudioContext();
+        }
+
+        for (const [voice, url] of Object.entries(urls)) {
+            try {
+                const response = await fetch(url)
+
+                const arrayBuffer = await response.arrayBuffer()
+
+                const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+                this.audioBuffers.set(voice, audioBuffer);
+
+                const gainNode = this.audioContext.createGain();
+
+                gainNode.connect(this.audioContext.destination);
+
+                this.gainNodes.set(voice, gainNode);
+            } catch (error) {
+                
+            }
+
+        }
+        
         return;
     }
 

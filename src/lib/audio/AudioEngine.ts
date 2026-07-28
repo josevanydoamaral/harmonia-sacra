@@ -38,7 +38,43 @@ class AudioEngine {
         return;
     }
 
-    play(): void {
+    async play(): Promise<void> {
+        if (!this.audioContext || this.audioBuffers.size === 0) {
+            return;
+        }
+
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume()
+        }
+
+        for (const sourceNode of this.sourceNodes.values()) {
+            try {
+                sourceNode.stop();
+            } catch(err) {
+                
+            }
+        }
+        this.sourceNodes.clear();
+
+        const scheduledStartTime = this.audioContext.currentTime + 0.1;
+
+        for(const [voice, buffer] of this.audioBuffers.entries()) {
+            const gainNode = this.gainNodes.get(voice);
+
+            const sourceNode = this.audioContext.createBufferSource();
+
+            sourceNode.buffer = buffer;
+
+            if (gainNode) sourceNode.connect(gainNode);
+
+            sourceNode.start(scheduledStartTime, this.pauseOffset);
+
+            this.sourceNodes.set(voice, sourceNode);
+        }
+
+        this.startTime = this.audioContext.currentTime - this.pauseOffset;
+
+        this.isPlaying = true
 
     }
 

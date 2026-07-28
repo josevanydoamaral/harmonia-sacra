@@ -1,4 +1,5 @@
 import { time } from "console";
+import { buffer } from "stream/consumers";
 
 class AudioEngine {
     private audioContext: AudioContext | null = null;
@@ -146,7 +147,20 @@ class AudioEngine {
     }
 
     destroy(): void {
+        this.pause();
+        this.audioBuffers.clear();
+        this.gainNodes.clear();
+        this.sourceNodes.clear();
+        this.audioContext?.close()
+        this.audioContext = null
+    }
 
+    getWaveformData(voice: string): Float32Array {
+        const buffer = this.audioBuffers.get(voice)?.getChannelData(0);
+
+        if(buffer) return buffer
+        
+        return new Float32Array(0)
     }
 
 

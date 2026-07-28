@@ -111,15 +111,28 @@ class AudioEngine {
     }
 
     setVolume(voice: string, value:number): void {
-
+        const naipe = this.gainNodes.get(voice)
+        if (naipe) naipe.gain.value = Math.max(0, Math.min(1, value))
+        
     }
 
     setMuted(voice: string, muted: boolean) {
-
+        const naipe = this.gainNodes.get(voice)
+        if (naipe) {
+            naipe.gain.value = muted ? 0 : 1;
+        }
+        
     }
 
     setSolo(voice: string | null): void {
-
+        for (const [vocalName, gainNode] of this.gainNodes.entries()) {
+            if(voice === null) {
+                gainNode.gain.value = 1
+            } else {
+                gainNode.gain.value = voice === vocalName ? 1 : 0
+            }
+        }   
+        
     }
 
     getElapsedTime(): number {

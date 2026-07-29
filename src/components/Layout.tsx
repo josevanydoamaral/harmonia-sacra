@@ -7,13 +7,13 @@ const Layout = () => {
   const isHome = location.pathname === '/';
   return (
     <>
-      {isHome ? <Home /> :
+      
         <div className='bg-base-surface'>
           <Header />
 
           <Outlet />
         </div>
-      }
+      
 
 
     </>

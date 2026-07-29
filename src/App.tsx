@@ -2,13 +2,11 @@ import { createRoutesFromElements, createBrowserRouter, RouterProvider, Route, R
 import Home from './components/Home'
 import SongDetail from './components/SongDetail'
 import Layout from './components/Layout'
-import AdminSongRow from './components/admin/AdminSongRow'
-import AdminDashboard from './components/admin/AdminDashboard'
-import SongForm from './components/admin/SongForm'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Dashboard from './components/admin/Dashboard'
 import Login from './pages/Login'
 import AdminLayout from './components/layouts/AdminLayout'
+import AudioTestPage from './pages/AudioTestPage'
 
 
 function App() {
@@ -18,6 +16,9 @@ function App() {
         <Route index element={<Home />} />
         <Route path='/cantico/:id' element={<SongDetail />} />
         <Route path='/login' element={<Login />} />
+
+
+        <Route path='/test' element={<AudioTestPage />} />
       
       </Route>
 
@@ -27,7 +28,7 @@ function App() {
               <AdminLayout />
           </ProtectedRoute>
         }>
-          
+
         <Route index element={<Dashboard />} />
       </Route>
     </>

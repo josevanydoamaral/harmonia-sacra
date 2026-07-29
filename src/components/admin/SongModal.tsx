@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { X } from 'lucide-react';
 
 interface DraftTrack {
     id: string;
@@ -59,10 +60,18 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
         )
     }
 
-
+    if (!isOpen) return null;
 
   return (
-    <div>SongModal</div>
+    <div className='flex items-center justify-center fixed inset-0 bg-base-surface/80 backdrop-blur-sm z-50'>
+
+        <div className='max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-base-surface border border-border-subtle rounded-3xl shadow-2xl p-8'>
+            <div className="flex items-center justify-between">
+                <h2 className='text-2xl text-accent-gold font-serif'>Adicionar Cântico</h2>
+                <button onClick={onClose}><X className='text-text-main' width={40} height={40} /></button>
+            </div>
+        </div>
+    </div>
   )
 }
 

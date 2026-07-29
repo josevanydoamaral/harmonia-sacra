@@ -1,13 +1,16 @@
 import { SquarePen, Trash2 } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
 import { useSongs } from '../../hooks/useSongs'
 import { getAudioStatus } from '../../utils/songUtils';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import SongModal from './SongModal';
 
 
 const Dashboard = () => {
     const { songs, loading, error } = useSongs();
+    const [isModalOpen, setIsModalOpen] = useState(true);
+
     if (loading) return "A carregar";
     if (error) return alert("Erro ao buscar cânticos");
 
@@ -25,6 +28,8 @@ const Dashboard = () => {
             }
         }
     }
+
+    
 
     return (
         <>
@@ -98,7 +103,7 @@ const Dashboard = () => {
                                         </td>
 
                                         <td className='p-4'>
-                                            <span className='font-semibold text-text-main'>{song.voices}</span>
+                                            <span className='font-semibold text-text-main'>3</span>
                                         </td>
                                         <td className='p-4'>
                                             {(() => {
@@ -163,6 +168,7 @@ const Dashboard = () => {
                     </tbody>
                 </table>
             </div>
+            <SongModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
         </>
 

@@ -1,6 +1,3 @@
-import { time } from "console";
-import { buffer } from "stream/consumers";
-
 class AudioEngine {
     private audioContext: AudioContext | null = null;
     private audioBuffers: Map<string, AudioBuffer> = new Map();
@@ -162,7 +159,6 @@ class AudioEngine {
         
         return new Float32Array(0)
     }
-
-
-
 }
+
+export default AudioEngine;

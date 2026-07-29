@@ -6,6 +6,7 @@ class AudioEngine {
     private startTime: number = 0;
     private pauseOffset: number = 0;
     private isPlaying: boolean = false;
+    public onEndedCallback: (() => void) | null = null;
 
     async loadTracks(urls: Record<string, string>): Promise<void>
     {
@@ -70,6 +71,17 @@ class AudioEngine {
             sourceNode.start(scheduledStartTime, this.pauseOffset);
 
             this.sourceNodes.set(voice, sourceNode);
+
+            sourceNode.onended = () => {
+                if (this.isPlaying) {
+                    this.isPlaying = false;
+                    this.pauseOffset = 0;
+
+                    if (this.onEndedCallback) {
+                        this.onEndedCallback()
+                    }
+                }
+            }
         }
 
         this.startTime = this.audioContext.currentTime - this.pauseOffset;
@@ -141,6 +153,10 @@ class AudioEngine {
             : this.pauseOffset
 
         return time
+    }
+    getDuration(): number {
+        const firstBuffer = Array.from(this.audioBuffers.values())[0];
+        return firstBuffer ? firstBuffer.duration : 0;
     }
 
     destroy(): void {

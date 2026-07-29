@@ -3,14 +3,14 @@ import { useAudioEngine } from '../hooks/useAudioEngine';
 import { Play, Pause } from 'lucide-react';
 
 const TEST_TRACKS = {
-    soprano: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    tenor: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+    soprano: "/audio/soprano.m4a",
+    tenor: "/audio/tenor.m4a"
 };
 
 const AudioTestPage = () => {
     const { 
         isPlaying, elapsedTime, isLoaded, 
-        pause, play, seek, setMuted, setSolo 
+        pause, play, seek, setMuted, setSolo, duration 
     } = useAudioEngine(TEST_TRACKS);
 
     const [sopranoMuted, setSopranoMuted] = useState(false);
@@ -61,7 +61,7 @@ const AudioTestPage = () => {
                 <input 
                     type='range' 
                     min={0} 
-                    max={300} 
+                    max={duration || 100} 
                     step={0.1}
                     value={elapsedTime}
                     onChange={(e) => seek(Number(e.target.value))}

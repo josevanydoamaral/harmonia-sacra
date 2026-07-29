@@ -13,12 +13,19 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
 
         engineRef.current = new AudioEngine();
 
+        engineRef.current.onEndedCallback = () => {
+            setIsPlaying(false);
+            setElapsedTime(0);
+        }
+
         const loadVoices = async () => {
             await engineRef.current?.loadTracks(audioUrls)
             setIsLoaded(true)
         }
 
         loadVoices()
+
+        
 
         return () => {
             engineRef.current?.destroy()
@@ -35,8 +42,7 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
             if (engineRef.current) setElapsedTime(engineRef.current.getElapsedTime())
             frameId = requestAnimationFrame(loop);
         }
-
-        
+        frameId = requestAnimationFrame(loop)
 
         return () => cancelAnimationFrame(frameId)
     }, [isPlaying])
@@ -72,6 +78,10 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
         return engineRef.current?.getWaveformData(voice) ?? new Float32Array(0)
     }
 
+    const getDuration = () => {
+        return engineRef.current?.getDuration() ?? 0;
+    }
+
     
 
     return {
@@ -84,6 +94,7 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
         setVolume, 
         setMuted, 
         setSolo,
-        getWaveformData
+        getWaveformData,
+        duration: engineRef.current?.getDuration() ?? 0
     }
 }

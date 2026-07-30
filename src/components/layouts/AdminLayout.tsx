@@ -4,7 +4,7 @@ import ThemeToggle from '../ThemeToggle'
 
 const AdminLayout = () => {
     return (
-        <main className='bg-base-surface py-8 px-4 max-w-6xl mx-auto w-full min-h-screen'>
+        <main className='bg-base-surface py-8 px-4 mx-auto w-full min-h-screen'>
             <header className='flex justify-between items-center mb-8'>
                 <div>
                     

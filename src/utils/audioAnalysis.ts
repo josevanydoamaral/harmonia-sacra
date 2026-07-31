@@ -18,3 +18,15 @@ export const detectOnset = (buffer: AudioBuffer, thresholdRatio?: number): numbe
 
     return onSetTime;
 }
+
+export const fileToAudioBuffer = async (file: File): Promise<AudioBuffer> => {
+    const audioCtx = new AudioContext();
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    
+    await audioCtx.close();
+    
+    return audioBuffer;
+}

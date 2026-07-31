@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
 import { fileToAudioBuffer } from '../../utils/audioAnalysis';
+import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 
 interface DraftTrack {
     id: string;
@@ -116,35 +117,39 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                     {tracks.length === 0
                         ? <span className='text-md text-card-text/60 mb-1.5 block'>Nenhuma voz adicionada. Clica em "+ Adicionar voz" para começar</span>
                         : tracks.map(track =>
-                            <div key={track.id}  className={`flex items-center justify-between gap-4 mb-4  p-4 rounded-xl border  border-border-subtle hover:border-accent-gold transition ${track.file ? 'bg-card-surface' : 'border-dashed'}`}>
-                                <div className='flex items-center justify-between gap-3'>
-                                <input 
-                                    type="text" 
-                                    value={track.label}
-                                    onChange={(e) => handleLabelChange(track.id, e.target.value)}
-                                    placeholder='Nome da voz'
-                                    className='w-36 p-1.5 placeholder:text-card-text/50 text-card-text text-md font-medium outline-none shadow-md px-4 rounded-lg border-b border-accent-gold/50' 
-                                />
-                                {track.file 
-                                ? <FileMusic className='text-accent-gold' /> 
-                                : <Upload className='text-card-text/50' /> }
-                                
-                                <label className='text-card-text/50 hover:cursor-pointer'>{track.file ? track.file.name : "Clicar ou arrastar para adicionar ficheiro .mp3"}
+                            <div key={track.id} className={`flex flex-col gap-3 mb-4  p-4 rounded-xl border  border-border-subtle hover:border-accent-gold transition ${track.file ? 'bg-card-surface' : 'border-dashed'}`}>
+                                <div className='flex items-center justify-between w-full'>
+                                    <div className="flex items-center gap-3">
                                         <input
-                                            type='file'
-                                            accept='audio/*'
-                                            onChange={(e) => handleFileChange(track.id, e.target.files?.[0] || null)}
-                                            className='hidden'
+                                            type="text"
+                                            value={track.label}
+                                            onChange={(e) => handleLabelChange(track.id, e.target.value)}
+                                            placeholder='Nome da voz'
+                                            className='w-36 p-1.5 placeholder:text-card-text/50 text-card-text text-md font-medium outline-none shadow-md px-4 rounded-lg border-b border-accent-gold/50'
                                         />
-                                    </label>
-                            </div>
-                                <div className='flex items-center justify-end'>
+                                        {track.file
+                                            ? <FileMusic className='text-accent-gold' />
+                                            : <Upload className='text-card-text/50' />}
+                                        <label className='text-card-text/50 hover:cursor-pointer'>{track.file ? track.file.name : "Clicar ou arrastar para adicionar ficheiro .mp3"}
+                                            <input
+                                                type='file'
+                                                accept='audio/*'
+                                                onChange={(e) => handleFileChange(track.id, e.target.files?.[0] || null)}
+                                                className='hidden'
+                                            />
+                                        
+                                        </label>
+                                    </div>
                                     <button onClick={() => handleRemoveTrack(track.id)}>
                                         <X className='text-card-text/50 hover:text-red-400 hover:cursor-pointer transition' />
                                     </button>
-                                    
                                 </div>
-
+                            
+                                {track.audioBuffer &&
+                                    <div className='mt-3 w-full'>
+                                        <WaveformVisualizer audioBuffer={track.audioBuffer} />
+                                    </div>
+                                }
                             </div>
                         )
                     }
@@ -154,10 +159,10 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                     <span>{tracks.length} vozes adicionadas - Alinhamento disponível a partir de 2 faixas</span>
                 </div>
                 <button className=
-                {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${validTracksCount < 2 
-                ? 'bg-card-surface text-card-text/30 cursor-not-allowed border border-border-subtle' 
-                : 'bg-accent-gold text-black hover:brightness-110 cursor-pointer'
-                }`}>Guardar cântico
+                    {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${validTracksCount < 2
+                        ? 'bg-card-surface text-card-text/30 cursor-not-allowed border border-border-subtle'
+                        : 'bg-accent-gold text-black hover:brightness-110 cursor-pointer'
+                        }`}>Guardar cântico
                 </button>
             </div>
         </div>

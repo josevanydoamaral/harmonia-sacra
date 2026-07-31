@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
-import { detectOnset, fileToAudioBuffer } from '../../utils/audioAnalysis';
+import { detectOnset, fileToAudioBuffer, padAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
-import { label } from 'framer-motion/client';
+import { button, label } from 'framer-motion/client';
 
 interface DraftTrack {
     id: string;
@@ -26,6 +26,11 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
 
     const [tracks, setTracks] = useState<DraftTrack[]>([]);
     const validTracksCount = tracks.filter(track => track.file !== null).length;
+
+    const audioCtxRef = useRef<AudioContext | null>(null);
+    const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
+
+    const [isPlaying, setIsPlaying] = useState(false);
 
     const handleAddTrack = () => {
         const track = {
@@ -70,7 +75,25 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
     }
 
     const handleAlignTracks = () => {
+        if (loadedTracks.length < 2) return;
 
+        const maxOnset = Math.max(...loadedTracks.map((t) => detectOnset(t.audioBuffer!)));
+
+        setTracks((prevTracks) => 
+            prevTracks.map((track) => {
+                if (!track.audioBuffer) return track;
+
+                const currentOnset = detectOnset(track.audioBuffer);
+                const delay = maxOnset - currentOnset;
+
+                // If the delay is significant (Greather than 5ms)
+                if (delay > 0.005) {
+                    const paddedBuffer = padAudioBuffer(track.audioBuffer, delay);
+                    return { ...track, audioBuffer: paddedBuffer };
+                }
+                return track;
+            })
+        )
     }
 
     const handleSubmit = () => {
@@ -89,6 +112,53 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
         }
 
         console.log("Cântico a guardar: ", songData);
+    }
+
+    const togglePlayAll = () => {
+        if (isPlaying) {
+            sourcesRef.current.forEach((source) => {
+                try { source.stop(); } catch {}
+            });
+
+            sourcesRef.current = [];
+            setIsPlaying(false);
+            return;
+        }
+
+        if (loadedTracks.length === 0) return;
+
+        if (!audioCtxRef.current) {
+            audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+
+        const ctx = audioCtxRef.current;
+
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
+        const newSources: AudioBufferSourceNode[] = [];
+
+        loadedTracks.forEach((track) => {
+            if (!track.audioBuffer) return;
+
+            const source = ctx.createBufferSource();
+            source.buffer = track.audioBuffer;
+            source.connect(ctx.destination);
+            newSources.push(source);
+        });
+
+        sourcesRef.current = newSources;
+
+        const starTime = ctx.currentTime + 0.05;
+        newSources.forEach((source) => source.start(starTime));
+        setIsPlaying(true)
+
+        const maxDuration = Math.max(...loadedTracks.map((t) => t.audioBuffer?.duration || 0));
+
+        setTimeout(() => {
+            setIsPlaying(false);
+        }, maxDuration * 1000);
     }
 
     const loadedTracks = tracks.filter((track) => track.audioBuffer !== null);
@@ -218,6 +288,17 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                         
                         >
                             Alinhar faixas
+                        </button>
+                    )
+
+                    }
+                    {loadedTracks.length > 0 && (
+                        <button
+                            type='button'
+                            onClick={togglePlayAll}
+                            className='flex items-center gap-2 bg-accent-gold/10 text-accent-gold border border-accent-gold/30 hover:bg-accent-gold/20 px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer'
+                        >
+                            {isPlaying ? '⏸️ Parar Preview': '▶️ Ouvir Cântico' }
                         </button>
                     )
 

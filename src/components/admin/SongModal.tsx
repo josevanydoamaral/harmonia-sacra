@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
-import { fileToAudioBuffer } from '../../utils/audioAnalysis';
+import { detectOnset, fileToAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 
 interface DraftTrack {
@@ -66,6 +66,30 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
             })
         )
     }
+
+    const loadedTracks = tracks.filter((track) => track.audioBuffer !== null);
+
+    const onsets = loadedTracks.map((track) => detectOnset(track.audioBuffer!));
+
+    const maxOnset = onsets.length > 0 ? Math.max(...onsets) : 0;
+    const minOnset = onsets.length > 0 ? Math.min(...onsets) : 0;
+
+    const maxDelta = onsets.length > 1 ? maxOnset - minOnset : 0;
+
+    const isMisaligned = maxDelta > 0.15;
+ 
+    const alignmentStatusText = loadedTracks.length < 2
+        ? `${tracks.length} vozes adicionadas - Alinhamento disponível a partir de 2 faixas`
+        : isMisaligned
+            ? `Aviso: Desalinhamento detetado (~${Math.round(maxDelta * 1000)}ms)`
+            : 'Vozes perfeitamente alinhadas';
+
+   
+    const alignmentStatusColor = loadedTracks.length < 2
+        ? 'text-card-text/50'
+        : isMisaligned
+            ? 'text-amber-600'
+            : 'text-emerald-600';
 
     if (!isOpen) return null;
 
@@ -137,14 +161,14 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                                                 onChange={(e) => handleFileChange(track.id, e.target.files?.[0] || null)}
                                                 className='hidden'
                                             />
-                                        
+
                                         </label>
                                     </div>
                                     <button onClick={() => handleRemoveTrack(track.id)}>
                                         <X className='text-card-text/50 hover:text-red-400 hover:cursor-pointer transition' />
                                     </button>
                                 </div>
-                            
+
                                 {track.audioBuffer &&
                                     <div className='mt-3 w-full'>
                                         <WaveformVisualizer audioBuffer={track.audioBuffer} />
@@ -155,8 +179,13 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                     }
                 </section>
                 <div className='pt-1 text-card-text/50 flex items-center gap-2'>
-                    <span>&#128712;</span>
-                    <span>{tracks.length} vozes adicionadas - Alinhamento disponível a partir de 2 faixas</span>
+                    <span className={`${alignmentStatusColor}`}>
+                        &#128712;
+                    </span>
+                    <span className={`${alignmentStatusColor}`}>
+
+                        {alignmentStatusText}
+                    </span>
                 </div>
                 <button className=
                     {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${validTracksCount < 2

@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
+import { fileToAudioBuffer } from '../../utils/audioAnalysis';
 
 interface DraftTrack {
     id: string;
     label: string;
     file: File | null;
+    audioBuffer: AudioBuffer | null;
 }
 
 interface SongModalProps {
@@ -19,14 +21,15 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
 
     const [pdfFile, setPdfFile] = useState<File | null>(null)
 
-    const [tracks, setTracks] = useState<DraftTrack[]>([{id: "blabla", label: "teste", file: null}]);
+    const [tracks, setTracks] = useState<DraftTrack[]>([]);
     const validTracksCount = tracks.filter(track => track.file !== null).length;
 
     const handleAddTrack = () => {
         const track = {
             id: crypto.randomUUID(),
             label: '',
-            file: null
+            file: null,
+            audioBuffer: null
         }
 
         setTracks([...tracks, track])
@@ -50,11 +53,13 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
         )
     }
 
-    const handleFileChange = (id: string, file: File | null) => {
+    const handleFileChange = async (id: string, file: File | null) => {
+        const buffer = file ? await fileToAudioBuffer(file) : null
+
         setTracks((tracks) =>
             tracks.map((track) => {
                 if (track.id === id) {
-                    return { ...track, file: file }
+                    return { ...track, file: file, audioBuffer: buffer }
                 }
                 return track
             })

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
 import { detectOnset, fileToAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
+import { label } from 'framer-motion/client';
 
 interface DraftTrack {
     id: string;
@@ -13,6 +14,7 @@ interface DraftTrack {
 interface SongModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSave: (SongData: any) => void;
 }
 
 const SongModal = ({ isOpen, onClose }: SongModalProps) => {
@@ -65,6 +67,28 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                 return track
             })
         )
+    }
+
+    const handleAlignTracks = () => {
+
+    }
+
+    const handleSubmit = () => {
+        if (!pdfFile || validTracksCount < 1 || title.trim().length < 1 || composer.trim().length < 1 || category.trim().length <1) return;
+
+        const songData = {
+            title,
+            composer,
+            category,
+            pdfFile,
+            tracks: tracks.map(t => ({
+                id: t.id,
+                label: t.label,
+                file: t.file
+            }))
+        }
+
+        console.log("Cântico a guardar: ", songData);
     }
 
     const loadedTracks = tracks.filter((track) => track.audioBuffer !== null);
@@ -186,6 +210,18 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
 
                         {alignmentStatusText}
                     </span>
+                    {loadedTracks.length >= 2 && isMisaligned && (
+                        <button 
+                            type='button'
+                            onClick={handleAlignTracks}
+                            className='text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 px-3 py-1 rounded-lg font-medium transition cursor-pointer'
+                        
+                        >
+                            Alinhar faixas
+                        </button>
+                    )
+
+                    }
                 </div>
                 <button className=
                     {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${validTracksCount < 2

@@ -17,7 +17,8 @@ interface SongModalProps {
     onSave: (SongData: any) => void;
 }
 
-const SongModal = ({ isOpen, onClose }: SongModalProps) => {
+const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
+
     const [title, setTitle] = useState('')
     const [composer, setComposer] = useState('')
     const [category, setCategory] = useState('')
@@ -79,7 +80,7 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
 
         const maxOnset = Math.max(...loadedTracks.map((t) => detectOnset(t.audioBuffer!)));
 
-        setTracks((prevTracks) => 
+        setTracks((prevTracks) =>
             prevTracks.map((track) => {
                 if (!track.audioBuffer) return track;
 
@@ -97,7 +98,7 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
     }
 
     const handleSubmit = () => {
-        if (!pdfFile || validTracksCount < 1 || title.trim().length < 1 || composer.trim().length < 1 || category.trim().length <1) return;
+        if(!isFormValid) return;
 
         const songData = {
             title,
@@ -111,13 +112,22 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
             }))
         }
 
-        console.log("Cântico a guardar: ", songData);
+        onSave(songData);
+        onClose();
     }
+
+    const isFormValid =
+        title.trim().length > 0 &&
+        composer.trim().length > 0 &&
+        category.trim().length > 0 &&
+        pdfFile !== null && validTracksCount >= 1 &&
+        tracks.length >= 1 &&
+        tracks.every(t => t.file !== null && t.label.trim().length > 0);
 
     const togglePlayAll = () => {
         if (isPlaying) {
             sourcesRef.current.forEach((source) => {
-                try { source.stop(); } catch {}
+                try { source.stop(); } catch { }
             });
 
             sourcesRef.current = [];
@@ -171,14 +181,14 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
     const maxDelta = onsets.length > 1 ? maxOnset - minOnset : 0;
 
     const isMisaligned = maxDelta > 0.15;
- 
+
     const alignmentStatusText = loadedTracks.length < 2
         ? `${tracks.length} vozes adicionadas - Alinhamento disponível a partir de 2 faixas`
         : isMisaligned
             ? `Aviso: Desalinhamento detetado (~${Math.round(maxDelta * 1000)}ms)`
             : 'Vozes perfeitamente alinhadas';
 
-   
+
     const alignmentStatusColor = loadedTracks.length < 2
         ? 'text-card-text/50'
         : isMisaligned
@@ -209,7 +219,7 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                         </div>
                     </div>
                     <div className='mb-4'>
-                        <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="category">Category</label>
+                        <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="category">Categoria</label>
                         <input className='w-full bg-card-surface px-4 py-3 rounded-xl border border-border-subtle placeholder:text-card-text/50 text-card-text/60 text-sm focus:outline-none focus:border-accent-gold' type="text" id='category' placeholder='Páscoa' onChange={(e) => setCategory(e.target.value)} />
                     </div>
                     <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="pdfUploader">Partitura (PDF)</label>
@@ -286,7 +296,7 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                                 type='button'
                                 onClick={handleAlignTracks}
                                 className='text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 px-3 py-1 rounded-lg font-medium transition cursor-pointer'
-                    
+
                             >
                                 Alinhar faixas
                             </button>
@@ -298,13 +308,16 @@ const SongModal = ({ isOpen, onClose }: SongModalProps) => {
                                 onClick={togglePlayAll}
                                 className='flex items-center gap-2 bg-accent-gold/10 text-accent-gold border border-accent-gold/30 hover:bg-accent-gold/20 px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer'
                             >
-                                {isPlaying ? '⏸️ Parar Preview': '▶️ Ouvir Cântico' }
+                                {isPlaying ? '⏸️ Parar Preview' : '▶️ Ouvir Cântico'}
                             </button>
                         )
                         }
                     </div>
-                    <button className=
-                        {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${validTracksCount < 2
+                    <button
+                        onClick={handleSubmit}
+                        disabled={!isFormValid}
+                        className=
+                        {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${!isFormValid
                             ? 'bg-card-surface text-card-text/30 cursor-not-allowed border border-border-subtle'
                             : 'bg-accent-gold text-black hover:brightness-110 cursor-pointer'
                             }`}>Guardar cântico

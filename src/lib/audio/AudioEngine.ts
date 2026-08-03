@@ -1,3 +1,5 @@
+import type { AudioTrack } from "../../types/song";
+
 class AudioEngine {
     private audioContext: AudioContext | null = null;
     private audioBuffers: Map<string, AudioBuffer> = new Map();
@@ -8,28 +10,29 @@ class AudioEngine {
     private isPlaying: boolean = false;
     public onEndedCallback: (() => void) | null = null;
 
-    async loadTracks(urls: Record<string, string>): Promise<void>
+    async loadTracks(tracks: AudioTrack[]): Promise<void>
     {
 
         if (!this.audioContext) {
             this.audioContext = new AudioContext();
         }
 
-        for (const [voice, url] of Object.entries(urls)) {
+        for (const track of tracks) {
             try {
-                const response = await fetch(url)
+                if (!track.url) continue;
+                const response = await fetch(track.url)
 
                 const arrayBuffer = await response.arrayBuffer()
 
                 const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
-                this.audioBuffers.set(voice, audioBuffer);
+                this.audioBuffers.set(track.id, audioBuffer);
 
                 const gainNode = this.audioContext.createGain();
 
                 gainNode.connect(this.audioContext.destination);
 
-                this.gainNodes.set(voice, gainNode);
+                this.gainNodes.set(track.id, gainNode);
             } catch (error) {
                 
             }

@@ -57,3 +57,28 @@
 --color-hover-button: #b45309; (Âmbar 700 para o hover do botão "Doe").
 
 --color-hover-card: #292524; (Stone 800 para o hover do card). */
+
+
+.modal-scroll-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-scroll-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-scroll-body::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent-gold, #d4af37);
+}
+
+.modal-scroll-body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent-gold, #d4af37) transparent;
+    mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    black 16px,
+    black calc(100% - 16px),
+    transparent 100%
+  );
+}

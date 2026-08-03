@@ -3,6 +3,7 @@ import { FileMusic, FileUp, Upload, X } from 'lucide-react';
 import { detectOnset, fileToAudioBuffer, padAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 import { button, label } from 'framer-motion/client';
+import type { RawSongData } from '../../services/songService';
 
 interface DraftTrack {
     id: string;
@@ -14,7 +15,7 @@ interface DraftTrack {
 interface SongModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (SongData: any) => void;
+    onSave: (SongData: RawSongData) => Promise<void>;
 }
 
 const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
@@ -32,6 +33,9 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
     const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
 
     const [isPlaying, setIsPlaying] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleAddTrack = () => {
         const track = {
@@ -97,24 +101,52 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
         )
     }
 
-    const handleSubmit = () => {
-        if(!isFormValid) return;
+    const handleSubmit = async () => {
+        if (!isFormValid || isSubmitting) return;
 
-        const songData = {
-            title,
-            composer,
-            category,
-            pdfFile,
-            tracks: tracks.map(t => ({
-                id: t.id,
-                label: t.label,
-                file: t.file
-            }))
+        setIsSubmitting(true);
+        setErrorMessage(null);
+
+        try {
+            const songData = {
+                title,
+                composer,
+                category,
+                pdfFile,
+                tracks: tracks.map(t => ({
+                    id: t.id,
+                    label: t.label,
+                    file: t.file!
+                }))
+            }
+
+            await onSave(songData);
+            resetForm();
+            onClose();
+
+        } catch (error) {
+            console.error(error)
+            setErrorMessage("Erro ao guardar o cântico. Tente novamente!");
+        } finally {
+            setIsSubmitting(false);
         }
 
-        onSave(songData);
+
+    }
+    const handleClose = () => {
+        resetForm();
         onClose();
     }
+
+    const resetForm = () => {
+        setTitle('');
+        setComposer('');
+        setCategory('');
+        setPdfFile(null);
+        setTracks([]);
+        setErrorMessage(null);
+        setIsPlaying(false);
+    };
 
     const isFormValid =
         title.trim().length > 0 &&
@@ -204,7 +236,7 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
                 <header>
                     <div className="flex items-center justify-between mb-8">
                         <h2 className='text-2xl text-accent-gold font-serif'>Adicionar Cântico</h2>
-                        <button onClick={onClose}><X className='text-text-main hover:cursor-pointer hover:text-red-400 transition' width={40} height={40} /></button>
+                        <button onClick={handleClose}><X className='text-text-main hover:cursor-pointer hover:text-red-400 transition' width={40} height={40} /></button>
                     </div>
                 </header>
                 <section className='flex-1 overflow-y-auto modal-scroll-body pr-2 py-4'>
@@ -313,6 +345,9 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
                         )
                         }
                     </div>
+                    {errorMessage &&
+                        <p className='text-red-400 text-sm'>{errorMessage}</p>
+                    }
                     <button
                         onClick={handleSubmit}
                         disabled={!isFormValid}
@@ -320,7 +355,10 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
                         {`w-full py-3.5 rounded-xl mt-8 text-lg font-semibold ${!isFormValid
                             ? 'bg-card-surface text-card-text/30 cursor-not-allowed border border-border-subtle'
                             : 'bg-accent-gold text-black hover:brightness-110 cursor-pointer'
-                            }`}>Guardar cântico
+                            }`}>{
+                            isSubmitting
+                                ? 'A guardar cântico...'
+                                : 'Guardar cântico'}
                     </button>
                 </footer>
             </div>

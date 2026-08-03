@@ -5,11 +5,14 @@ import { getAudioStatus } from '../../utils/songUtils';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import SongModal from './SongModal';
+import { createSong, type RawSongData } from '../../services/songService';
 
 
 const Dashboard = () => {
     const { songs, loading, error } = useSongs();
-    const [isModalOpen, setIsModalOpen] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [isUploading, setIsUploading] = useState(false);
 
     if (loading) return "A carregar";
     if (error) return alert("Erro ao buscar cânticos");
@@ -26,6 +29,20 @@ const Dashboard = () => {
             } catch (error) {
                 window.alert("Erro ao apagar cântico.");
             }
+        }
+    }
+
+    const handleCreateSong = async (songData: RawSongData) => {
+        setIsUploading(true)
+
+        try {
+            const newSongId = await createSong(songData)
+            alert("Cântico adicionado com sucesso!")
+        } catch(error) {
+            console.error(error)
+            alert("Erro ao criar cântico no servidor.")
+        } finally {
+            setIsUploading(false)
         }
     }
 
@@ -52,7 +69,11 @@ const Dashboard = () => {
             </section>
             <div className="flex justify-between items-center mb-4">
                 <h2 className='text-xl font-bold text-text-main'>Cânticos</h2>
-                <button className='bg-accent-gold text-black font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 hover:opacity-90 transition hover:cursor-pointer'>+ Adicionar Cântico</button>
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className='bg-accent-gold text-black font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 hover:opacity-90 transition hover:cursor-pointer'
+                    >+ Adicionar Cântico
+                </button>
             </div>
             <div className="w-full bg-card-surface border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
 
@@ -103,7 +124,7 @@ const Dashboard = () => {
                                         </td>
 
                                         <td className='p-4'>
-                                            <span className='font-semibold text-text-main'>3</span>
+                                            <span className='font-semibold text-text-main'>{song.tracks?.length || 0}</span>
                                         </td>
                                         <td className='p-4'>
                                             {(() => {
@@ -168,7 +189,7 @@ const Dashboard = () => {
                     </tbody>
                 </table>
             </div>
-            <SongModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <SongModal onSave={handleCreateSong} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
         </>
 

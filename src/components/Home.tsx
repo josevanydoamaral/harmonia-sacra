@@ -21,7 +21,7 @@ const Home = () => {
       (snapshot) => {
 
         const songsData = snapshot.docs.map(
-          doc => ({ id: doc.id, ...doc.data() }))
+          doc => ({ id: doc.id, ...doc.data() } as Song))
         setSongs(songsData)
       },
       (error) => { console.error("Erro no Firebase: ", error) })

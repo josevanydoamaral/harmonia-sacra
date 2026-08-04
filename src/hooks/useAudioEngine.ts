@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react"
 import AudioEngine from "../lib/audio/AudioEngine"
+import type { AudioTrack } from "../types/song";
 
-export const useAudioEngine = (audioUrls?: Record<string, string>) => {
+export const useAudioEngine = (tracks?: AudioTrack[]) => {
     const engineRef = useRef<AudioEngine | null>(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const tracksKey = tracks?.map(t => t.id).join(',') || '';
+
     useEffect(() => {
-        if (!audioUrls || Object.keys(audioUrls).length === 0) return;
+        if (!tracks || tracks.length === 0) return;
 
         engineRef.current = new AudioEngine();
 
@@ -19,7 +22,7 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
         }
 
         const loadVoices = async () => {
-            await engineRef.current?.loadTracks(audioUrls)
+            await engineRef.current?.loadTracks(tracks)
             setIsLoaded(true)
         }
 
@@ -31,7 +34,7 @@ export const useAudioEngine = (audioUrls?: Record<string, string>) => {
             engineRef.current?.destroy()
             engineRef.current = null;
         }
-    }, [JSON.stringify(audioUrls)])
+    }, [tracksKey])
 
     useEffect(() => {
         if (!isPlaying) return;

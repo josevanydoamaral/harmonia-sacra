@@ -56,6 +56,7 @@ class AudioEngine {
 
         for (const sourceNode of this.sourceNodes.values()) {
             try {
+                sourceNode.onended = null
                 sourceNode.stop();
             } catch(err) {
                 
@@ -65,9 +66,11 @@ class AudioEngine {
 
         const scheduledStartTime = this.audioContext.currentTime + 0.1;
 
+        let endedTracksCount = 0;
+        const totalTracks = this.audioBuffers.size;
+
         for(const [voice, buffer] of this.audioBuffers.entries()) {
             const gainNode = this.gainNodes.get(voice);
-
             const sourceNode = this.audioContext.createBufferSource();
 
             sourceNode.buffer = buffer;
@@ -79,7 +82,8 @@ class AudioEngine {
             this.sourceNodes.set(voice, sourceNode);
 
             sourceNode.onended = () => {
-                if (this.isPlaying) {
+                endedTracksCount++;
+                if (endedTracksCount === totalTracks) {
                     this.isPlaying = false;
                     this.pauseOffset = 0;
 
@@ -90,8 +94,7 @@ class AudioEngine {
             }
         }
 
-        this.startTime = this.audioContext.currentTime - this.pauseOffset;
-
+        this.startTime = scheduledStartTime - this.pauseOffset;
         this.isPlaying = true
 
     }

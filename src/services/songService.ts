@@ -18,7 +18,7 @@ export interface RawSongData {
   tracks: RawTrackData[];
 }
 
-export const createSong = async (rawData: RawSongData): Promise<string> => {
+export const songService = async (rawData: RawSongData): Promise<string> => {
     
     // PDF Upload
     const pdfRef = ref(storage, `scores/${Date.now()}_${rawData.pdfFile.name}`);

@@ -1,93 +1,39 @@
 import React, { useEffect, useRef, useState } from 'react'
 import TrackControl from './TrackControl'
 import { Link, useParams } from 'react-router-dom'
-import type { Song } from '../types/song';
+import type { AudioTrack, Song } from '../types/song';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import MasterControl from './MasterControl';
+import { useAudioEngine } from '../hooks/useAudioEngine';
 
 
 const SongDetail = () => {
   const { id } = useParams();
   const [song, setSong] = useState<Song | null>(null)
-  const [isPlaying, SetIsPlaying] = useState(false)
 
-  // References for each voices
-  const sopranoRef = useRef<HTMLAudioElement | null>(null);
-  const altoRef = useRef<HTMLAudioElement | null>(null);
-  const tenorRef = useRef<HTMLAudioElement | null>(null);
-  const bassRef = useRef<HTMLAudioElement | null>(null);
-
-  const audioRefs = useRef<Map<string, HTMLAudioElement>>(new Map())
-
-  // List of all audio elements
-  const allAudios = [sopranoRef, altoRef, tenorRef, bassRef];
-
-  // Everytime  isPlaying changes this useEffect runs
-  useEffect(() => {
-
-    allAudios.forEach(ref => {
-      if (ref.current) {
-        if (isPlaying) {
-          ref.current.play();
-        } else {
-          ref.current.pause();
-        }
-      }
-    })
-  }, [isPlaying]);
 
   const [volumes, setVolumes] = useState<Record<string, number>>({});
+  const [muteds, setMuteds] = useState<Record<string, boolean>>({});
 
-  const [muted, setMuted] = useState<Record<string, boolean>>({});
 
   const [soloVoice, setSoloVoice] = useState<string | null>(null);
 
-  const [currentTime, setCurrentTime] = useState<number>(0)
-  const [duration, setDuration] = useState<number>(0)
+  const {
+    duration,
+    elapsedTime,
+    isLoaded,
+    getWaveformData,
+    isPlaying,
+    pause,
+    play,
+    seek,
+    setMuted,
+    setSolo,
+    setVolume
 
-  const handleSeek = (newTime: number) => {
-    setCurrentTime(newTime)
+  } = useAudioEngine(song?.tracks);
 
-    sopranoRef.current && (sopranoRef.current.currentTime = newTime)
-    altoRef.current && (altoRef.current.currentTime = newTime)
-    tenorRef.current && (tenorRef.current.currentTime = newTime)
-    bassRef.current && (bassRef.current.currentTime = newTime)
-    
-  }
-
-  // If volumes and muted changed run this
-  // An audio component should be muted only if there if mutted button is selected or if there is a solo button active in any of the other components. And when we click at the solo button in a place where mute button is active it disables mute and play the solo.
-  useEffect(() => {
-    if (!song || song.tracks.length < 1) return;
-
-    song.tracks.forEach(track => {
-      audioRefs.current.get(track.id);
-      if (audioRefs.current) {
-        audioRefs.current.
-      }
-    })
-
-    if (sopranoRef.current) {
-      sopranoRef.current.volume = volumes.soprano
-      sopranoRef.current.muted = muted.soprano || (soloVoice !== null && soloVoice !== 'soprano')
-    }
-
-    if (altoRef.current) {
-      altoRef.current.volume = volumes.alto
-      altoRef.current.muted = muted.alto || (soloVoice !== null && soloVoice !== 'alto')
-    }
-
-    if (tenorRef.current) {
-      tenorRef.current.volume = volumes.tenor
-      tenorRef.current.muted = muted.tenor || (soloVoice !== null && soloVoice !== 'tenor')
-    }
-
-    if (bassRef.current) {
-      bassRef.current.volume = volumes.bass
-      bassRef.current.muted = muted.bass || (soloVoice !== null && soloVoice !== 'bass')
-    }
-  }, [volumes, muted, soloVoice])
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -103,6 +49,21 @@ const SongDetail = () => {
         // Verify if docs exists
         if (docSnap.exists()) {
           setSong({ id: docSnap.id, ...docSnap.data() } as Song);
+
+          const songData = docSnap.data() as Song;
+          const songTracks: AudioTrack[] = songData.tracks
+
+          if (songTracks) {
+            const initialVolumes: Record<string, number> = {}
+            const initialMuteds: Record<string, boolean> = {}
+
+            songTracks.forEach(t => { initialVolumes[t.id] = 0.8; initialMuteds[t.id] = false })
+
+            setVolumes(initialVolumes)
+            setMuteds(initialMuteds)
+
+          }
+
         } else {
           console.warn("Cântico não encontrado no banco de dados.");
         }
@@ -111,23 +72,13 @@ const SongDetail = () => {
       }
     }
     fetchSong()
-    let initialVolumes: Record<string, number> = {}
-    let initialMute: Record<string, boolean> = {}
-
-    song?.tracks.map(track => {
-      initialVolumes[track.id] = 0.8;
-      initialMute[track.id] = false;
-    })
-
-    setVolumes(initialVolumes)
-    setMuted(initialMute)
 
   }, [id])
 
   if (!song) return <div className="p-10 text-white">A carregar cântico...</div>;
 
   return (
-    
+
     <div className='min-h-screen flex flex-col lg:flex-row'>
 
       <div className="w-full lg:w-1/2 h-[650px] lg:h-screen p-4 shrink-0">
@@ -143,97 +94,40 @@ const SongDetail = () => {
       <div className="w-full lg:w-1/2 p-6">
 
         <div className="my-8">
-          <MasterControl isPlaying={isPlaying} currentTime={currentTime} duration={duration} onSeek={handleSeek} onToggle={() => SetIsPlaying(!isPlaying)} />
+          <MasterControl isPlaying={isPlaying} currentTime={elapsedTime} duration={duration} onSeek={seek} onToggle={() => isPlaying ? pause() : play()} />
         </div>
+        {
+          song.tracks.map(t => 
+            <TrackControl 
+              key={t.id}
+              label={t.label}
+              audioUrl={t.url}
+              volume={volumes[t.id]}
+              isMuted={muteds[t.id]}
+              isSolo={soloVoice === t.id}
+              
+              onVolumeChange={(newVol) => {
+                setVolumes(prev => ({ ...prev, [t.id]: newVol }))
+                setVolume(t.id, newVol)
+              }}
 
-        <TrackControl 
-          label="Soprano" 
-          audioUrl={song.audioUrls?.soprano} 
-          volume={volumes.soprano} 
-          onVolumeChange={(v) => setVolumes({ ...volumes, soprano: v })} 
-          isMuted={muted.soprano} 
-          onMuteToggle={() => setMuted({ ...muted, soprano: !muted.soprano })} 
-          isSolo={soloVoice === 'soprano'}
-          onSoloToggle={() => {
-            const isCurrentlySolo = soloVoice === 'soprano';
-            setSoloVoice(isCurrentlySolo ? null : 'soprano');
-            if (!isCurrentlySolo) {
-              setMuted((prev) => ({ ...prev, soprano: false }))
-            }
-          }}
+              onMuteToggle={() => {
+                const newMuted = !muteds[t.id];
+                setMuteds(prev => ({ ...prev, [t.id]: newMuted }));
+                setMuted(t.id, newMuted);
+              }}
 
-        />
+              onSoloToggle={() => {
+                const isCurrentlySolo = soloVoice === t.id;
+                const newSoloStatus = isCurrentlySolo ? null : t.id;
 
-        <TrackControl 
-          label="Contralto" 
-          audioUrl={song.audioUrls?.alto} 
-          volume={volumes.alto} 
-          onVolumeChange={(v) => setVolumes({ ...volumes, alto: v })} 
-          isMuted={muted.alto}
-          onMuteToggle={() => setMuted({ ...muted, alto: !muted.alto })}
-          isSolo={soloVoice === 'alto'}
-          onSoloToggle={() => {
-            const isCurrentlySolo = soloVoice === 'alto';
-            setSoloVoice(isCurrentlySolo ? null : 'alto')
-            if (!isCurrentlySolo) {
-              setMuted((prev) => ({ ...prev, alto: false }))
-            }
-          }}
-          
-
-        />
-
-        <TrackControl 
-          label="Tenor" 
-          audioUrl={song.audioUrls?.tenor} 
-          volume={volumes.tenor} 
-          onVolumeChange={(v) => setVolumes({ ...volumes, tenor: v })}
-          isMuted={muted.tenor} 
-          onMuteToggle={() => setMuted({ ...muted, tenor: !muted.tenor })} 
-          isSolo={soloVoice === 'tenor'}
-          onSoloToggle={() => {
-            const isCurrentlySolo = soloVoice === 'tenor';
-            setSoloVoice(isCurrentlySolo ? null : 'tenor');
-            if (!isCurrentlySolo) {
-              setMuted((prev) => ({ ...prev, tenor: false }))
-            }
-          }}
-         
-
-        />
-
-        <TrackControl 
-          label="Baixo" 
-          audioUrl={song.audioUrls?.bass} 
-          volume={volumes.bass} 
-          onVolumeChange={(v) => setVolumes({ ...volumes, bass: v })} 
-          isMuted={muted.bass} 
-          onMuteToggle={() => setMuted({ ...muted, bass: !muted.bass })} 
-          isSolo={soloVoice === 'bass'}
-          onSoloToggle={() => {
-            const isCurrentlySolo = soloVoice === 'bass'
-            setSoloVoice(isCurrentlySolo ? null : 'bass')
-            if (!isCurrentlySolo) {
-              setMuted((prev) => ({ ...prev, bass: false }))
-            }
-          }}
-
-        />
+                setSoloVoice(newSoloStatus);
+                setSolo(newSoloStatus);
+              }}
+            />
+          )
+        }
       </div>
-
-   
-      { 
-        song.tracks.map((track, index) => 
-          <audio 
-            key={track.id} 
-            onTimeUpdate={index === 0 ? (e) => setCurrentTime(e.currentTarget.currentTime) : undefined}
-            onLoadedMetadata={index === 0 ? (e) => setDuration(e.currentTarget.duration) : undefined}
-            ref={(el) => {
-              el 
-              ? audioRefs.current.set(track.id, el) 
-              : audioRefs.current.delete(track.id) }}
-            src={track.url} />)
-      }
     </div>
   )
 }

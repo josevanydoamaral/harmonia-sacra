@@ -8,6 +8,9 @@ class AudioEngine {
     private startTime: number = 0;
     private pauseOffset: number = 0;
     private isPlaying: boolean = false;
+    private volumes: Map<string, number> = new Map();
+    private mutedVoices: Map<string, boolean> = new Map();
+    private soloVoice: string | null = null;
     public onEndedCallback: (() => void) | null = null;
 
     async loadTracks(tracks: AudioTrack[]): Promise<void>
@@ -123,27 +126,34 @@ class AudioEngine {
         
     }
 
-    setVolume(voice: string, value:number): void {
-        const naipe = this.gainNodes.get(voice)
-        if (naipe) naipe.gain.value = Math.max(0, Math.min(1, value))
-        
+    private applyGain(voice: string): void {
+        const gainNode = this.gainNodes.get(voice);
+        if (!gainNode) return;
+
+        const currVolume = this.volumes.get(voice) ?? 1.0;
+
+        if (this.mutedVoices.get(voice) === true || (this.soloVoice !== null && this.soloVoice !== voice)) {
+            gainNode.gain.value = 0;
+        } else {
+            gainNode.gain.value = currVolume;
+        }
+    }
+
+    setVolume(voice: string, value: number): void {
+        this.volumes.set(voice, Math.max(0, Math.min(1, value)))
+        this.applyGain(voice);
     }
 
     setMuted(voice: string, muted: boolean) {
-        const naipe = this.gainNodes.get(voice)
-        if (naipe) {
-            naipe.gain.value = muted ? 0 : 1;
-        }
+        this.mutedVoices.set(voice, muted)
+        this.applyGain(voice);
         
     }
 
     setSolo(voice: string | null): void {
-        for (const [vocalName, gainNode] of this.gainNodes.entries()) {
-            if(voice === null) {
-                gainNode.gain.value = 1
-            } else {
-                gainNode.gain.value = voice === vocalName ? 1 : 0
-            }
+        this.soloVoice = voice;
+        for (const v of this.gainNodes.keys()) {
+            this.applyGain(v)
         }   
         
     }

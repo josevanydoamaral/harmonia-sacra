@@ -11,31 +11,33 @@ import AudioTestPage from './pages/AudioTestPage'
 
 function App() {
   const routes = createRoutesFromElements(
-    <>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path='/cantico/:id' element={<SongDetail />} />
-        <Route path='/login' element={<Login />} />
+      <>
+        <Route path='/' element={<Home />} />
+
+        <Route element={<Layout />}>
+          <Route path='/cantico/:id' element={<SongDetail />} />
+          <Route path='/login' element={<Login />} />
 
 
-        <Route path='/test' element={<AudioTestPage />} />
-      
-      </Route>
+          <Route path='/test' element={<AudioTestPage />} />
 
-      <Route path='/dashboard' element=
-        {
-          <ProtectedRoute>
+        </Route>
+
+        <Route path='/dashboard' element=
+          {
+            <ProtectedRoute>
               <AdminLayout />
-          </ProtectedRoute>
-        }>
+            </ProtectedRoute>
+          }>
 
-        <Route index element={<Dashboard />} />
-      </Route>
-    </>
-    
+          <Route index element={<Dashboard />} />
+        </Route>
+      </>
+  
+
 
   );
-  
+
   const router = createBrowserRouter(routes);
 
   return (

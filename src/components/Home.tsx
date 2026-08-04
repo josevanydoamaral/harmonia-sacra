@@ -6,13 +6,13 @@ import SearchBar from './SearchBar'
 import SongCard from './SongCard'
 import { motion } from 'framer-motion'
 import { db } from '../lib/firebase'
-import type { VoicesType } from '../types/song'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import type { Song } from '../types/song'
 
 const Home = () => {
   const [search, setSearch] = useState("")
-  const [songs, setSongs] = useState<any[]>([])
+  const [songs, setSongs] = useState<Song[]>([])
 
   useEffect(() => {
     const songsCollection = collection(db, "songs");
@@ -47,7 +47,7 @@ const Home = () => {
         <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
           {filteredSongs.map(song =>
             <Link key={song.id} to={`cantico/${song.id}`}>
-              <SongCard id={song.id} title={song.title} composer={song.composer} category={song.category} voices={song.voices as VoicesType} />
+              <SongCard id={song.id} title={song.title} composer={song.composer} category={song.category} tracks={song.tracks} />
             </Link>
           )}
         </motion.div>

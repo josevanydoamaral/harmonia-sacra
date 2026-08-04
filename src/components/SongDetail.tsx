@@ -18,6 +18,8 @@ const SongDetail = () => {
   const tenorRef = useRef<HTMLAudioElement | null>(null);
   const bassRef = useRef<HTMLAudioElement | null>(null);
 
+  const audioRefs = useRef<Map<string, HTMLAudioElement>>(new Map())
+
   // List of all audio elements
   const allAudios = [sopranoRef, altoRef, tenorRef, bassRef];
 
@@ -35,19 +37,9 @@ const SongDetail = () => {
     })
   }, [isPlaying]);
 
-  const [volumes, SetVolumes] = useState({
-    soprano: 0.8, // initial volume value = 80%
-    alto: 0.8,
-    tenor: 0.8,
-    bass: 0.8
-  })
+  const [volumes, setVolumes] = useState<Record<string, number>>({});
 
-  const [muted, setMuted] = useState({
-    soprano: false,
-    alto: false,
-    tenor: false,
-    bass: false
-  });
+  const [muted, setMuted] = useState<Record<string, boolean>>({});
 
   const [soloVoice, setSoloVoice] = useState<string | null>(null);
 
@@ -67,6 +59,15 @@ const SongDetail = () => {
   // If volumes and muted changed run this
   // An audio component should be muted only if there if mutted button is selected or if there is a solo button active in any of the other components. And when we click at the solo button in a place where mute button is active it disables mute and play the solo.
   useEffect(() => {
+    if (!song || song.tracks.length < 1) return;
+
+    song.tracks.forEach(track => {
+      audioRefs.current.get(track.id);
+      if (audioRefs.current) {
+        audioRefs.current.
+      }
+    })
+
     if (sopranoRef.current) {
       sopranoRef.current.volume = volumes.soprano
       sopranoRef.current.muted = muted.soprano || (soloVoice !== null && soloVoice !== 'soprano')
@@ -110,6 +111,17 @@ const SongDetail = () => {
       }
     }
     fetchSong()
+    let initialVolumes: Record<string, number> = {}
+    let initialMute: Record<string, boolean> = {}
+
+    song?.tracks.map(track => {
+      initialVolumes[track.id] = 0.8;
+      initialMute[track.id] = false;
+    })
+
+    setVolumes(initialVolumes)
+    setMuted(initialMute)
+
   }, [id])
 
   if (!song) return <div className="p-10 text-white">A carregar cântico...</div>;
@@ -138,7 +150,7 @@ const SongDetail = () => {
           label="Soprano" 
           audioUrl={song.audioUrls?.soprano} 
           volume={volumes.soprano} 
-          onVolumeChange={(v) => SetVolumes({ ...volumes, soprano: v })} 
+          onVolumeChange={(v) => setVolumes({ ...volumes, soprano: v })} 
           isMuted={muted.soprano} 
           onMuteToggle={() => setMuted({ ...muted, soprano: !muted.soprano })} 
           isSolo={soloVoice === 'soprano'}
@@ -156,7 +168,7 @@ const SongDetail = () => {
           label="Contralto" 
           audioUrl={song.audioUrls?.alto} 
           volume={volumes.alto} 
-          onVolumeChange={(v) => SetVolumes({ ...volumes, alto: v })} 
+          onVolumeChange={(v) => setVolumes({ ...volumes, alto: v })} 
           isMuted={muted.alto}
           onMuteToggle={() => setMuted({ ...muted, alto: !muted.alto })}
           isSolo={soloVoice === 'alto'}
@@ -175,7 +187,7 @@ const SongDetail = () => {
           label="Tenor" 
           audioUrl={song.audioUrls?.tenor} 
           volume={volumes.tenor} 
-          onVolumeChange={(v) => SetVolumes({ ...volumes, tenor: v })}
+          onVolumeChange={(v) => setVolumes({ ...volumes, tenor: v })}
           isMuted={muted.tenor} 
           onMuteToggle={() => setMuted({ ...muted, tenor: !muted.tenor })} 
           isSolo={soloVoice === 'tenor'}
@@ -194,7 +206,7 @@ const SongDetail = () => {
           label="Baixo" 
           audioUrl={song.audioUrls?.bass} 
           volume={volumes.bass} 
-          onVolumeChange={(v) => SetVolumes({ ...volumes, bass: v })} 
+          onVolumeChange={(v) => setVolumes({ ...volumes, bass: v })} 
           isMuted={muted.bass} 
           onMuteToggle={() => setMuted({ ...muted, bass: !muted.bass })} 
           isSolo={soloVoice === 'bass'}
@@ -209,15 +221,19 @@ const SongDetail = () => {
         />
       </div>
 
-      <audio 
-        ref={sopranoRef} 
-        src={song.audioUrls?.soprano}
-        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)} 
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-      />
-      <audio ref={altoRef} src={song.audioUrls?.alto} />
-      <audio ref={tenorRef} src={song.audioUrls?.tenor} />
-      <audio ref={bassRef} src={song.audioUrls?.bass} />
+   
+      { 
+        song.tracks.map((track, index) => 
+          <audio 
+            key={track.id} 
+            onTimeUpdate={index === 0 ? (e) => setCurrentTime(e.currentTarget.currentTime) : undefined}
+            onLoadedMetadata={index === 0 ? (e) => setDuration(e.currentTarget.duration) : undefined}
+            ref={(el) => {
+              el 
+              ? audioRefs.current.set(track.id, el) 
+              : audioRefs.current.delete(track.id) }}
+            src={track.url} />)
+      }
     </div>
   )
 }

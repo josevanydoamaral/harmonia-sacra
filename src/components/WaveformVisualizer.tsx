@@ -17,8 +17,8 @@ const WaveformVisualizer = ({ pcmData, progress = 0 }: WaveformVisualizerProps) 
 
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
-        const barWidth = 3;
-        const barGap = 2;
+        const barWidth = 2;
+        const barGap = 3;
         const width = canvasRef.current.width;
         const height = canvasRef.current.height;
 

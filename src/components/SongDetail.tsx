@@ -34,6 +34,8 @@ const SongDetail = () => {
 
   } = useAudioEngine(song?.tracks);
 
+  const progress = duration > 0 ? elapsedTime / duration : 0;
+
 
   useEffect(() => {
     // Async function to fetch songs from firebase
@@ -97,6 +99,10 @@ const SongDetail = () => {
           <MasterControl isPlaying={isPlaying} currentTime={elapsedTime} duration={duration} onSeek={seek} onToggle={() => isPlaying ? pause() : play()} />
         </div>
         {
+          !isLoaded 
+          ? <div className="text-track-text p-8 text-center">A carregar faixas de áudio...</div>
+          :
+          
           song.tracks.map(t => 
             <TrackControl 
               key={t.id}
@@ -105,6 +111,8 @@ const SongDetail = () => {
               volume={volumes[t.id]}
               isMuted={muteds[t.id]}
               isSolo={soloVoice === t.id}
+              pcmData={getWaveformData(t.id)}
+              progress={progress}
               
               onVolumeChange={(newVol) => {
                 setVolumes(prev => ({ ...prev, [t.id]: newVol }))

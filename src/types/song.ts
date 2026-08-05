@@ -25,6 +25,8 @@ export interface TrackProps {
     onMuteToggle: () => void;
     isSolo: boolean;
     onSoloToggle: () => void;
+    pcmData: Float32Array;
+    progress: number;
 }
 
 export interface AdminActions extends Song {

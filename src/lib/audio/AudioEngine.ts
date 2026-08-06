@@ -82,6 +82,9 @@ class AudioEngine {
             this.sourceNodes.set(voice, sourceNode);
 
             sourceNode.onended = () => {
+                if (sourceNode !== this.sourceNodes.get(voice)) {
+                    return;
+                }
                 endedTracksCount++;
                 if (endedTracksCount === totalTracks) {
                     this.isPlaying = false;

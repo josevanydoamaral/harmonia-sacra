@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Play, Pause } from 'lucide-react'
 import { formatTime } from '../utils/utils';
 
@@ -12,6 +12,18 @@ interface MasterControlProps {
 }
 
 const MasterControl = ({ isPlaying, currentTime, duration, onSeek, onToggle }: MasterControlProps) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragTime, setDragTime] = useState(currentTime);
+
+    
+    useEffect(() => {
+        if (isDragging) return;
+        
+        setDragTime(currentTime);
+        
+    }, [currentTime])
+    
+    const activeTime = isDragging ? dragTime : currentTime;
     return (
         <div className='flex items-center gap-6 p-4 bg-track-surface rounded-xl border border-accent-gold/20 shadow-lg'>
             <button className='text-accent-gold hover:scale-110 transition-transform cursor-pointer' onClick={onToggle}>
@@ -28,8 +40,18 @@ const MasterControl = ({ isPlaying, currentTime, duration, onSeek, onToggle }: M
                     className='w-full h-1.5 bg-accent-gold/10 rounded-lg appearance-none cursor-pointer accent-accent-gold'
                     min="0"
                     max={duration}
-                    value={currentTime}
-                    onChange={(e) => onSeek(Number(e.target.value))}
+                    value={activeTime}
+                    onChange={(e) => setDragTime(Number(e.target.value))}
+                    onMouseDown={() => setIsDragging(true)}
+                    onTouchStart={() => setIsDragging(true)}
+                    onMouseUp={() => {
+                        setIsDragging(false);
+                        onSeek(dragTime)
+                    }}
+                    onTouchEnd={() => {
+                        setIsDragging(false);
+                        onSeek(dragTime)
+                    }}
                 />
                 <div className="flex justify-between text-[10px] uppercase tracking-widest text-accent-gold/40 font-bold">
                     <span>Início</span>

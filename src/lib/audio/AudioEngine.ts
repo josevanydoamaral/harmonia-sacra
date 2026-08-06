@@ -82,7 +82,7 @@ class AudioEngine {
         }
         this.sourceNodes.clear();
 
-        const scheduledStartTime = this.audioContext.currentTime + 0.01;
+        const scheduledStartTime = this.audioContext.currentTime + 0.04;
 
         let endedTracksCount = 0;
         const totalTracks = this.audioBuffers.size;

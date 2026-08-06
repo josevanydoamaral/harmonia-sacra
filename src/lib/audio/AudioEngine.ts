@@ -45,6 +45,23 @@ class AudioEngine {
         return;
     }
 
+    private stopAllSourcesImmediately() {
+        const now = this.audioContext ? this.audioContext.currentTime : 0;
+
+        for (const [voice, sourceNode] of this.sourceNodes.entries()) {
+            const gainNode = this.gainNodes.get(voice);
+            
+            gainNode?.gain.cancelScheduledValues(now);
+            gainNode?.gain.setValueAtTime(0, now);
+            sourceNode.onended = null;
+            sourceNode.stop(now);
+            sourceNode.disconnect();
+        }
+
+                    this.sourceNodes.clear();
+
+    }
+
     async play(): Promise<void> {
         if (!this.audioContext || this.audioBuffers.size === 0) {
             return;
@@ -58,13 +75,14 @@ class AudioEngine {
             try {
                 sourceNode.onended = null
                 sourceNode.stop();
+                sourceNode.disconnect()
             } catch(err) {
                 
             }
         }
         this.sourceNodes.clear();
 
-        const scheduledStartTime = this.audioContext.currentTime + 0.1;
+        const scheduledStartTime = this.audioContext.currentTime + 0.01;
 
         let endedTracksCount = 0;
         const totalTracks = this.audioBuffers.size;
@@ -143,7 +161,7 @@ class AudioEngine {
         const wasPlaying = this.isPlaying;
 
         if (wasPlaying) {
-            this.pause()
+            this.stopAllSourcesImmediately()
         }
 
         this.pauseOffset = Math.max(0, time)

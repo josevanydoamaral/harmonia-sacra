@@ -81,6 +81,18 @@ class AudioEngine {
 
             this.sourceNodes.set(voice, sourceNode);
 
+            const isMuted = this.mutedVoices.get(voice) === true;
+            const isOtherSolo = this.soloVoice !== null && this.soloVoice !== voice;
+            const targetVolume = (isMuted || isOtherSolo) ? 0 : (this.volumes.get(voice) ?? 0.8)
+
+            if (gainNode) {
+
+                gainNode.gain.cancelScheduledValues(scheduledStartTime);
+                gainNode.gain.setValueAtTime(0, scheduledStartTime);
+
+                gainNode.gain.linearRampToValueAtTime(targetVolume, scheduledStartTime + 0.005);
+            }
+
             sourceNode.onended = () => {
                 if (sourceNode !== this.sourceNodes.get(voice)) {
                     return;
@@ -105,11 +117,20 @@ class AudioEngine {
     pause(): void {
         if (!this.isPlaying) return;
 
+        
         this.pauseOffset = this.getElapsedTime();
-
-        for (const sourceNode of this.sourceNodes.values()) {
+        const now = this.audioContext ? this.audioContext.currentTime : 0;
+        
+        for (const [voice, sourceNode] of this.sourceNodes.entries()) {
             try {
-                sourceNode.stop();
+                const gainNode = this.gainNodes.get(voice);
+
+                if (gainNode) {
+                    gainNode.gain.cancelScheduledValues(now);
+                    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.005);
+                }
+                sourceNode.stop(now + 0.005);
             } catch(err) {
 
             }
@@ -168,7 +189,7 @@ class AudioEngine {
         if (!this.audioContext) return 0;
         const time = 
             this.isPlaying 
-            ? this.audioContext.currentTime - this.startTime 
+            ? Math.max(this.pauseOffset ,this.audioContext.currentTime - this.startTime) 
             : this.pauseOffset
 
         return time

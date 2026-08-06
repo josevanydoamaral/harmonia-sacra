@@ -3,7 +3,6 @@ import type { UserProfile } from "../types/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import firebase from "firebase/compat/app";
 
 export interface AuthContextType {
     user: User | null;

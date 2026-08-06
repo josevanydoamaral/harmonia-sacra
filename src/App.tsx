@@ -7,33 +7,39 @@ import Dashboard from './components/admin/Dashboard'
 import Login from './pages/Login'
 import AdminLayout from './components/layouts/AdminLayout'
 import AudioTestPage from './pages/AudioTestPage'
+import { GuestRoute } from './components/GuestRoute'
 
 
 function App() {
   const routes = createRoutesFromElements(
-      <>
-        <Route path='/' element={<Home />} />
+    <>
+      <Route path='/' element={<Home />} />
 
-        <Route element={<Layout />}>
-          <Route path='/cantico/:id' element={<SongDetail />} />
-          <Route path='/login' element={<Login />} />
+      <Route element={<Layout />}>
+        <Route path='/cantico/:id' element={<SongDetail />} />
 
+        <Route path='/test' element={<AudioTestPage />} />
 
-          <Route path='/test' element={<AudioTestPage />} />
+      </Route>
 
-        </Route>
+      <Route path='/login' index element={
+        <GuestRoute>
+          <Login />
+        </GuestRoute>}
+      >
+      </Route>
 
-        <Route path='/dashboard' element=
-          {
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
+      <Route path='/dashboard' element=
+        {
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
 
-          <Route index element={<Dashboard />} />
-        </Route>
-      </>
-  
+        <Route index element={<Dashboard />} />
+      </Route>
+    </>
+
 
 
   );

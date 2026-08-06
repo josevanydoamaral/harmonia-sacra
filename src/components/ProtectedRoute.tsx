@@ -1,5 +1,4 @@
 import type React from "react";
-import { createContext, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 

@@ -27,6 +27,8 @@ export interface TrackProps {
     onSoloToggle: () => void;
     pcmData: Float32Array;
     progress: number;
+    duration: number;
+    onSeek: (time: number) => void
 }
 
 export interface AdminActions extends Song {

@@ -113,6 +113,8 @@ const SongDetail = () => {
               isSolo={soloVoice === t.id}
               pcmData={getWaveformData(t.id)}
               progress={progress}
+              duration={duration}
+              onSeek={(time) => seek(time)}
               
               onVolumeChange={(newVol) => {
                 setVolumes(prev => ({ ...prev, [t.id]: newVol }))

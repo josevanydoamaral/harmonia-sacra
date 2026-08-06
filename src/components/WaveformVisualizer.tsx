@@ -1,13 +1,25 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, type MouseEvent } from 'react'
 
 interface WaveformVisualizerProps {
     pcmData: Float32Array;
     progress?: number;
+    duration: number;
+    onSeek: (time: number) => void;
 }
 
-const WaveformVisualizer = ({ pcmData, progress = 0 }: WaveformVisualizerProps) => {
+const WaveformVisualizer = ({ pcmData, progress = 0, duration, onSeek }: WaveformVisualizerProps) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+    const handleCanvasClick = (event: MouseEvent<HTMLCanvasElement>) => {
+        if (!canvasRef.current || !onSeek || duration === 0) return;
+
+        const rect = canvasRef.current.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const clickRatio = clickX / rect.width;
+        const targetTime = Math.max(0, Math.min(duration, clickRatio * duration));
+
+        onSeek(targetTime);
+    }
     useEffect(() => {
         if (!canvasRef.current) return;
 
@@ -68,8 +80,9 @@ const WaveformVisualizer = ({ pcmData, progress = 0 }: WaveformVisualizerProps) 
 
     return (
         <canvas
+            onClick={handleCanvasClick}
             ref={canvasRef}
-            className='w-full h-12'
+            className='w-full h-12 hover:cursor-pointer'
         />
     )
 }

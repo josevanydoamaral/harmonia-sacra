@@ -4,7 +4,7 @@ import { motion, scale } from 'framer-motion'
 import type { TrackProps } from '../types/song'
 import WaveformVisualizer from './WaveformVisualizer'
 
-const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMuteToggle, isSolo, onSoloToggle, pcmData, progress } : TrackProps) => {
+const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMuteToggle, isSolo, onSoloToggle, pcmData, progress, onSeek, duration } : TrackProps) => {
     return (
         <div className='relative flex justify-center max-w-lg mx-auto  p-3'>
             <div className='flex flex-col w-full p-3 bg-track-surface rounded-md shadow-xl border border-track-border'>
@@ -21,7 +21,7 @@ const TrackControl = ({ label, audioUrl, volume, onVolumeChange, isMuted, onMute
                             onChange={(e) => onVolumeChange(parseFloat(e.target.value)) } />
                     </div>
                     <div className="flex items-center justify-center gap-2 w-full">
-                        <WaveformVisualizer pcmData={pcmData} progress={progress} />
+                        <WaveformVisualizer pcmData={pcmData} progress={progress} duration={duration} onSeek={onSeek} />
                     </div>
                     <div className='flex items-center gap-2'>
                         {/* MUTE */}

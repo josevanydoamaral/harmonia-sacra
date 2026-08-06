@@ -22,7 +22,7 @@ const Dashboard = () => {
     const totalCategories = new Set(songs.map(s => s.category).filter(Boolean)).size;
 
     const handleDelete = async (id: string): Promise<void> => {
-        if(window.confirm("Tem a certeza que quer eliminar este cântico?")) {
+        if (window.confirm("Tem a certeza que quer eliminar este cântico?")) {
             try {
                 await deleteDoc(doc(db, 'songs', id));
                 window.alert("Cântico apagado com sucesso");
@@ -38,7 +38,7 @@ const Dashboard = () => {
         try {
             const newSongId = await createSong(songData)
             alert("Cântico adicionado com sucesso!")
-        } catch(error) {
+        } catch (error) {
             console.error(error)
             alert("Erro ao criar cântico no servidor.")
         } finally {
@@ -46,7 +46,7 @@ const Dashboard = () => {
         }
     }
 
-    
+
 
     return (
         <>
@@ -69,10 +69,10 @@ const Dashboard = () => {
             </section>
             <div className="flex justify-between items-center mb-4">
                 <h2 className='text-xl font-bold text-text-main'>Cânticos</h2>
-                <button 
+                <button
                     onClick={() => setIsModalOpen(true)}
                     className='bg-accent-gold text-black font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 hover:opacity-90 transition hover:cursor-pointer'
-                    >+ Adicionar Cântico
+                >+ Adicionar Cântico
                 </button>
             </div>
             <div className="w-full bg-card-surface border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
@@ -94,7 +94,7 @@ const Dashboard = () => {
                             songs.length === 0
                                 ? <tr>
                                     <td colSpan={5} className='text-center text-text-main/50 p-3'>
-                                    Sem cânticos
+                                        Sem cânticos
                                     </td>
                                 </tr>
 
@@ -129,12 +129,12 @@ const Dashboard = () => {
                                         <td className='p-4'>
                                             {(() => {
                                                 const status = getAudioStatus(song);
-                                                const colorClass = 
-                                                status === 'Completo'
-                                                ? 'text-emerald-400'
-                                                : status === 'Parcial'
-                                                ? 'text-amber-400'
-                                                : 'text-rose-400';
+                                                const colorClass =
+                                                    status === 'Completo'
+                                                        ? 'text-emerald-400'
+                                                        : status === 'Parcial'
+                                                            ? 'text-amber-400'
+                                                            : 'text-rose-400';
 
                                                 return (
                                                     <span className={`
@@ -172,8 +172,8 @@ const Dashboard = () => {
                                         transition 
                                         hover:text-text-main 
                                         cursor-pointer'
-                                        onClick={() => handleDelete(song.id)}
-                                        >
+                                                    onClick={() => handleDelete(song.id)}
+                                                >
 
                                                     <Trash2 className='
                                             w-5 

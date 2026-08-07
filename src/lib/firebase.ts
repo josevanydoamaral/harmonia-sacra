@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { getApps, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
@@ -15,10 +15,16 @@ const firebaseConfig = {
 // Initialize firebase
 const app = initializeApp(firebaseConfig);
 
+// Initialize firebase second instance
+const secondaryApp = getApps().find(app => app.name === "Secondary") || initializeApp(firebaseConfig, "Secondary");
+
 // Export database to be used in all website
 export const db = getFirestore(app);
 
 // Export auth
 export const auth = getAuth(app);
+
+// Export Secondary Auth
+export const secondaryAuth = getAuth(secondaryApp)
 
 export const storage = getStorage(app);

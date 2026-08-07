@@ -8,6 +8,7 @@ import SongModal from './SongModal';
 import { createSong, type RawSongData } from '../../services/songService';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import AccountsPanel from './AccountsPanel';
 
 
 const Dashboard = () => {
@@ -226,10 +227,7 @@ const Dashboard = () => {
                                 <SongModal onSave={handleCreateSong} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
                             </>
                         ) : (
-                            <div>
-                                {/* Placeholder temporário para a Gestão de Contas */}
-                                <h2 className="text-xl font-bold text-text-main mb-4">Gestão de Contas</h2>
-                            </div>
+                            <AccountsPanel />
                         )}
                     </motion.div>
                 </AnimatePresence>

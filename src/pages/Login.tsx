@@ -33,7 +33,7 @@ const Login = () => {
     }
 
   return (
-    <div className='min-h-screen flex items-center justify-center px-4 '>
+    <div className='bg-base-surface min-h-screen flex items-center justify-center px-4 '>
         <div className='w-full max-w-sm flex flex-col items-center'>
             <h1 className='font-title text-3xl text-accent-gold text-center mb-1'>Harmonia Sacra</h1>
             <p className='text-sm text-text-main/80 text-center mb-8'>Acesse a sua conta</p>

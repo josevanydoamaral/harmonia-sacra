@@ -2,7 +2,7 @@ import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import type { UserProfile } from "../types/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export interface AuthContextType {
     user: User | null;
@@ -32,7 +32,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const docSnap = await getDoc(docRef)
 
                 if (docSnap.exists()) {
-                    setProfile(docSnap.data() as UserProfile)
+                    const user = docSnap.data() as UserProfile;
+
+                    if (user.status === 'pending') {
+                        user.status = 'active';
+                        await updateDoc(docRef, { status: 'active'})
+                    }
+                    
+                    setProfile(user)
                 } else {
                     setUser(null)
                     setProfile(null)

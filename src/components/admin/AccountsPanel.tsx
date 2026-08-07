@@ -1,5 +1,6 @@
 import { SquarePen, Trash2 } from 'lucide-react';
 import React, { useState } from 'react'
+import InviteModal from './InviteModal';
 
 export interface AccountUser {
     uid: string;
@@ -91,7 +92,9 @@ const AccountsPanel = ( {}) => {
                                             </tbody>
                                         </table>
                                     </div>
+                                    <InviteModal isOpen={true} onClose={() => setIsInviteModalOpen(false)} onInvite={async () =>{} } />
                                 </>
+                                
   )
 }
 

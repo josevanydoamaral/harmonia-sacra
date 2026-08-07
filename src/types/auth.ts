@@ -6,6 +6,7 @@ export interface UserProfile {
     uuid: string,
     email: string,
     role: UserRole,
+    status?: 'active' | 'pending';
     createdAt: Timestamp
 }
 

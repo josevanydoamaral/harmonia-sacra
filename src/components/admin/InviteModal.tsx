@@ -25,6 +25,7 @@ const InviteModal = ({ isOpen, onClose, onInvite}: InviteEditorModalProps) => {
             setIsSubmitting(false);
         }
     }
+    
 
     if (!isOpen) return null;
   return (

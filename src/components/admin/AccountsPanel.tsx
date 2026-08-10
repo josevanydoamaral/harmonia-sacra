@@ -4,17 +4,15 @@ import InviteModal from './InviteModal';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { db, secondaryAuth } from '../../lib/firebase';
 import type { UserProfile, UserRole } from '../../types/auth';
-import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, deleteDoc, doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
+import { useAccounts } from '../../hooks/useAccounts';
 
 
 
 const AccountsPanel = ({ }) => {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-    const mockUsers: UserProfile[] = [
-        { uuid: '1', email: 'admin@harmonia.com', role: 'admin', status: 'active', createdAt: Timestamp.now() },
-        { uuid: '2', email: 'editor@harmonia.com', role: 'editor', status: 'pending', createdAt: Timestamp.now() },
-    ];
+    const { users, error, loading } = useAccounts()
 
     const handleInvite = async (email: string, role: UserRole = 'editor') => {
         try {
@@ -28,7 +26,7 @@ const AccountsPanel = ({ }) => {
                 status: 'pending',
                 createdAt: serverTimestamp()
             }
-            
+
             const docRef = doc(db, 'users', uid);
 
             await setDoc(docRef, data)
@@ -36,11 +34,25 @@ const AccountsPanel = ({ }) => {
             await sendPasswordResetEmail(secondaryAuth, email);
             await signOut(secondaryAuth);
 
-        } catch(error) {
+        } catch (error) {
             console.error(error)
             throw new Error("Erro ao enviar convite");
         }
     }
+
+    const handleDeleteUser = async (uuid: string) => {
+        if (window.confirm("Tem a certeza que deseja eliminar o utilizador?")) {
+            try {
+                await deleteDoc(doc(db, 'users', uuid));
+                window.alert("Utilizador eliminado com sucesso.")
+            } catch(error) {
+                window.alert("Erro ao eliminar cântico. Tente Novamente em breve.");
+                console.log("Erro: ", error);
+            }
+        }
+    }
+
+    if (error) return <p className="text-red-400 p-4">Erro ao carregar contas: {error}</p>;
 
     return (
         <>
@@ -65,15 +77,20 @@ const AccountsPanel = ({ }) => {
                     </thead>
 
                     <tbody>
-                        {
-                            mockUsers.length === 0
+                        {   loading 
+                            ? <tr>
+                                    <td colSpan={5} className='text-center text-text-main/50 p-3'>
+                                        Carregando utilizadores...
+                                    </td>
+                                </tr>
+                            : users.length === 0
                                 ? <tr>
                                     <td colSpan={5} className='text-center text-text-main/50 p-3'>
                                         Sem contas
                                     </td>
                                 </tr>
 
-                                : mockUsers.map((user) => (
+                                : users.map((user) => (
                                     <tr key={user.uuid} className="border-b border-border-subtle/50 last:border-b-0 hover:bg-white/5 transition">
                                         <td className='p-4'>
                                             <span className='font-semibold text-text-main'>
@@ -89,18 +106,14 @@ const AccountsPanel = ({ }) => {
                                             </span>
                                         </td>
 
-                                        <td className='p-4'>
-                                            <span className='font-semibold text-text-main'>{user.status}</span>
+                                        <td className={`p-4 ${user.status === 'active' ? 'text-emerald-400': 'text-amber-400'}`}>
+                                            <span className='font-semibold text-text-main'>{user.status === 'active' ? 'Ativo' : 'Pendente'}</span>
                                         </td>
 
                                         <td className="p-4">
                                             <div className="flex items-center justify-end gap-5">
-                                                <button className='p-1.5 rounded-lg transition hover:text-text-main cursor-pointer'>
-                                                    <SquarePen className='w-5 text-text-main/60 hover:text-text-main/10 transition' />
-                                                </button>
-
                                                 <button className='p-1.5 rounded-lg transition hover:text-text-main cursor-pointer'
-                                                    onClick={() => { }}
+                                                    onClick={() => handleDeleteUser(user.uuid)}
                                                 >
 
                                                     <Trash2 className='

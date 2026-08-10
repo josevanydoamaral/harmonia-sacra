@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     setProfile(null)
                 }
             } else  {
+                await signOut(auth);
                 setUser(null)
                 setProfile(null)
             }

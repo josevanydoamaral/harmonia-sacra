@@ -5,10 +5,11 @@ import { getAudioStatus } from '../../utils/songUtils';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import SongModal from './SongModal';
-import { createSong, type RawSongData } from '../../services/songService';
+import { createSong, updateSong, type RawSongData } from '../../services/songService';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import AccountsPanel from './AccountsPanel';
+import type { Song } from '../../types/song';
 
 
 const Dashboard = () => {
@@ -17,6 +18,7 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState<'songs' | 'accounts'>('songs');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState<Song | null>(null);
 
     const [isUploading, setIsUploading] = useState(false);
 
@@ -38,19 +40,35 @@ const Dashboard = () => {
         }
     }
 
-    const handleCreateSong = async (songData: RawSongData) => {
-        setIsUploading(true)
+    const handleSaveSong = async (songData: RawSongData) => {
+        if (isEditing) {
+            setIsUploading(true)
 
-        try {
-            const newSongId = await createSong(songData)
-            alert("Cântico adicionado com sucesso!")
-        } catch (error) {
-            console.error(error)
-            alert("Erro ao criar cântico no servidor.")
-        } finally {
-            setIsUploading(false)
+            try {
+                await updateSong(isEditing.id, songData)
+                alert("Cântico atualizado com sucesso");
+            } catch (error) {
+                alert("Erro ao atualizar cântico no servidor.");
+            } finally {
+                setIsUploading(false);
+            }
+
+        } else {
+            setIsUploading(true)
+
+            try {
+                const newSongId = await createSong(songData)
+                alert("Cântico adicionado com sucesso!")
+            } catch (error) {
+                console.error(error)
+                alert("Erro ao criar cântico no servidor.")
+            } finally {
+                setIsUploading(false)
+            }
         }
     }
+
+
 
 
 
@@ -64,7 +82,7 @@ const Dashboard = () => {
                         : 'text-text-main/60 hover:text-text-main font-medium'}`}
                 >Cânticos</button>
                 {profile?.role === 'admin' &&
-                     
+
                     <button
                         onClick={() => setActiveTab('accounts')}
                         className={`px-4 py-2 rounded-lg transition cursor-pointer font-medium ${activeTab === 'accounts'
@@ -181,39 +199,18 @@ const Dashboard = () => {
                                                                 })()}
                                                             </td>
                                                             <td className="p-4">
-                                                                <div className="
-                                    flex 
-                                    items-center 
-                                    justify-end 
-                                    gap-5">
+                                                                <div className="flex items-center justify-end gap-5">
 
-                                                                    <button className='
-                                        p-1.5 
-                                        rounded-lg 
-                                        transition 
-                                        hover:text-text-main 
-                                        cursor-pointer'>
-
-                                                                        <SquarePen className='
-                                            w-5 
-                                            text-text-main/60 
-                                            hover:text-text-main/10 
-                                            transition' />
+                                                                    <button
+                                                                        onClick={() => setIsEditing(song)}
+                                                                        className='p-1.5 rounded-lg transition hover:text-text-main cursor-pointer'>
+                                                                        <SquarePen className='w-5 text-text-main/60 hover:text-text-main/10 transition' />
                                                                     </button>
 
-                                                                    <button className='
-                                        p-1.5 
-                                        rounded-lg 
-                                        transition 
-                                        hover:text-text-main 
-                                        cursor-pointer'
+                                                                    <button className='p-1.5 rounded-lg transition hover:text-text-main cursor-pointer'
                                                                         onClick={() => handleDelete(song.id)}
                                                                     >
-
-                                                                        <Trash2 className='
-                                            w-5 
-                                            text-red-400/70 
-                                            hover:text-red-500/80' />
+                                                                        <Trash2 className='w-5 text-red-400/70 hover:text-red-500/80' />
                                                                     </button>
                                                                 </div>
                                                             </td>
@@ -224,7 +221,7 @@ const Dashboard = () => {
                                         </tbody>
                                     </table>
                                 </div>
-                                <SongModal onSave={handleCreateSong} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+                                <SongModal onSave={handleSaveSong} initialData={isEditing} isOpen={isModalOpen || !!isEditing} onClose={() => { setIsModalOpen(false); setIsEditing(null); }} />
                             </>
                         ) : (
                             <AccountsPanel />

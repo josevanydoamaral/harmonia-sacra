@@ -1,24 +1,26 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
 import { detectOnset, fileToAudioBuffer, padAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
-import { button, label } from 'framer-motion/client';
 import type { RawSongData } from '../../services/songService';
+import type { Song } from '../../types/song';
 
 interface DraftTrack {
     id: string;
     label: string;
     file: File | null;
+    url?: string | null;
     audioBuffer: AudioBuffer | null;
 }
 
 interface SongModalProps {
     isOpen: boolean;
+    initialData?: Song | null;
     onClose: () => void;
     onSave: (SongData: RawSongData) => Promise<void>;
 }
 
-const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
+const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => {
 
     const [title, setTitle] = useState('')
     const [composer, setComposer] = useState('')
@@ -29,6 +31,8 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
     const [tracks, setTracks] = useState<DraftTrack[]>([]);
     const validTracksCount = tracks.filter(track => track.file !== null).length;
 
+    const [existingUrl, setExistingUrl] = useState<string | null>(null);
+
     const audioCtxRef = useRef<AudioContext | null>(null);
     const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
 
@@ -36,6 +40,35 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (initialData) {
+            setTitle(initialData.title);
+            setComposer(initialData.composer);
+            setCategory(initialData.category);
+            setExistingUrl(initialData.pdfUrl ?? null);
+            setPdfFile(null);
+            const tr =
+                initialData.tracks?.map(track => ({
+                    id: track.id,
+                    label: track.label,
+                    file: null,
+                    audioBuffer: null,
+                    url: track.url,
+                })) ?? []
+            setTracks(tr)
+
+        } else {
+            setTitle('');
+            setComposer('');
+            setCategory('');
+            setExistingUrl(null);
+            setPdfFile(null);
+            setTracks([])
+        }
+
+        return () => { }
+    }, [initialData, isOpen])
 
     const handleAddTrack = () => {
         const track = {
@@ -113,10 +146,12 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
                 composer,
                 category,
                 pdfFile,
+                existingPdfUrl: existingUrl,
                 tracks: tracks.map(t => ({
                     id: t.id,
                     label: t.label,
-                    file: t.file!
+                    file: t.file,
+                    existingUrl: t.url
                 }))
             }
 
@@ -243,16 +278,16 @@ const SongModal = ({ isOpen, onClose, onSave }: SongModalProps) => {
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
                         <div>
                             <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="title">Título</label>
-                            <input className='w-full bg-card-surface border border-border-subtle rounded-xl text-sm text-card-text/60 px-4 py-3 focus:outline-none focus:border-accent-gold placeholder:text-card-text/50' type="text" placeholder='Ex.: O Cordeiro que foi imolado' onChange={(e) => setTitle(e.target.value)} id='title' />
+                            <input className='w-full bg-card-surface border border-border-subtle rounded-xl text-sm text-card-text/60 px-4 py-3 focus:outline-none focus:border-accent-gold placeholder:text-card-text/50' type="text" placeholder='Ex.: O Cordeiro que foi imolado' value={title} onChange={(e) => setTitle(e.target.value)} id='title' />
                         </div>
                         <div>
                             <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="compositor">Compositor</label>
-                            <input className='w-full bg-card-surface px-4 py-3 rounded-xl border border-border-subtle text-card-text/60 text-sm focus:outline-none focus:border-accent-gold placeholder:text-card-text/50' type="text" id='compositor' placeholder='A. Cartageno' onChange={(e) => setComposer(e.target.value)} />
+                            <input className='w-full bg-card-surface px-4 py-3 rounded-xl border border-border-subtle text-card-text/60 text-sm focus:outline-none focus:border-accent-gold placeholder:text-card-text/50' type="text" id='compositor' placeholder='A. Cartageno' value={composer} onChange={(e) => setComposer(e.target.value)} />
                         </div>
                     </div>
                     <div className='mb-4'>
                         <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="category">Categoria</label>
-                        <input className='w-full bg-card-surface px-4 py-3 rounded-xl border border-border-subtle placeholder:text-card-text/50 text-card-text/60 text-sm focus:outline-none focus:border-accent-gold' type="text" id='category' placeholder='Páscoa' onChange={(e) => setCategory(e.target.value)} />
+                        <input className='w-full bg-card-surface px-4 py-3 rounded-xl border border-border-subtle placeholder:text-card-text/50 text-card-text/60 text-sm focus:outline-none focus:border-accent-gold' type="text" id='category' placeholder='Páscoa' value={category} onChange={(e) => setCategory(e.target.value)} />
                     </div>
                     <label className='text-md text-card-text/60 mb-1.5 block' htmlFor="pdfUploader">Partitura (PDF)</label>
                     <div className='flex items-center justify-between gap-4 mb-4 bg-card-surface p-4 rounded-xl border border-dashed border-border-subtle hover:border-accent-gold transition'>

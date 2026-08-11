@@ -22,6 +22,9 @@ export interface RawSongData {
 
 export const createSong = async (rawData: RawSongData): Promise<string> => {
     
+    if (!rawData.pdfFile) {
+        throw new Error("O ficheiro PDF é obrigatório para criar um cântico.")
+    }
     // PDF Upload
     const pdfRef = ref(storage, `scores/${Date.now()}_${rawData.pdfFile.name}`);
     await uploadBytes(pdfRef, rawData.pdfFile);
@@ -30,6 +33,10 @@ export const createSong = async (rawData: RawSongData): Promise<string> => {
     // Audio Tracks Upload
     const uploadedTracks = await Promise.all(
         rawData.tracks.map(async (track) => {
+            if (!track.file) {
+                throw new Error(`O ficheiro de áudio para a voz "${track.label}" é obrigatório.`)
+            }
+
             const audioRef = ref(storage, `tracks/${Date.now()}_${track.file.name}`);
             await uploadBytes(audioRef, track.file);
             const url = await getDownloadURL(audioRef);

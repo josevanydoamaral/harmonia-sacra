@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
-import { detectOnset, fileToAudioBuffer, padAudioBuffer, urlToAudioBuffer } from '../../utils/audioAnalysis';
+import { audioBufferToFile, detectOnset, fileToAudioBuffer, padAudioBuffer, urlToAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 import type { RawSongData } from '../../services/songService';
 import type { Song } from '../../types/song';
@@ -151,8 +151,12 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
                 // If the delay is significant (Greather than 5ms)
                 if (delay > 0.005) {
+
                     const paddedBuffer = padAudioBuffer(track.audioBuffer, delay);
-                    return { ...track, audioBuffer: paddedBuffer };
+                    const filename = track.file?.name || `${track.label || 'voz'}_alinhada.wav`;
+                    const alignedFile = audioBufferToFile(paddedBuffer, filename)
+                    
+                    return { ...track, audioBuffer: paddedBuffer, file: alignedFile };
                 }
                 return track;
             })

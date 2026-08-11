@@ -30,7 +30,6 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     const [pdfFile, setPdfFile] = useState<File | null>(null)
 
     const [tracks, setTracks] = useState<DraftTrack[]>([]);
-    const validTracksCount = tracks.filter(track => track.file !== null).length;
 
     const [existingUrl, setExistingUrl] = useState<string | null>(null);
 
@@ -38,9 +37,15 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     const sourcesRef = useRef<AudioBufferSourceNode[]>([]);
 
     const [isPlaying, setIsPlaying] = useState(false);
+    const stopTimeoutRef = useRef<number | null>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const playableTracks = tracks.filter((track) => track.audioBuffer !== null);
+
+    const tracksToAnalyze = tracks.filter((track) => track.audioBuffer !== null && !track.isIntentionalDelay);
+
 
     useEffect(() => {
         let isCancelled = false;
@@ -60,7 +65,10 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                     url: track.url,
                     isIntentionalDelay: track.isIntentionalDelay ?? false
                 })) ?? []
-            setTracks(tr)
+                
+            if (!isCancelled) {
+                setTracks(tr)
+            }
 
             initialData.tracks?.forEach(async (track) => {
                 if (track.url) {
@@ -81,6 +89,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
         return () => {
             isCancelled = true;
+            stopAllAudio();
         }
 
     }, [initialData, isOpen])
@@ -97,6 +106,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     }
 
     const handleRemoveTrack = (id: string) => {
+        stopAllAudio();
         setTracks((items) =>
             items.filter((item) => item.id !== id)
         )
@@ -150,6 +160,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     }
 
     const handleSubmit = async () => {
+        if (isPlaying) stopAllAudio();
         if (!isFormValid || isSubmitting) return;
 
         setIsSubmitting(true);
@@ -197,7 +208,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         setExistingUrl(null);
         setTracks([]);
         setErrorMessage(null);
-        setIsPlaying(false);
+        stopAllAudio()
     };
 
     const toggleIntentionalDelay = (id: string) => {
@@ -208,16 +219,12 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
     const togglePlayAll = () => {
         if (isPlaying) {
-            sourcesRef.current.forEach((source) => {
-                try { source.stop(); } catch { }
-            });
-
-            sourcesRef.current = [];
-            setIsPlaying(false);
+            stopAllAudio()
             return;
         }
 
-        if (tracksToAnalyze.length === 0) return;
+        if (playableTracks.length === 0) return;
+
 
         if (!audioCtxRef.current) {
             audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -231,7 +238,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
         const newSources: AudioBufferSourceNode[] = [];
 
-        tracksToAnalyze.forEach((track) => {
+        playableTracks.forEach((track) => {
             if (!track.audioBuffer) return;
 
             const source = ctx.createBufferSource();
@@ -246,14 +253,27 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         newSources.forEach((source) => source.start(starTime));
         setIsPlaying(true)
 
-        const maxDuration = Math.max(...tracksToAnalyze.map((t) => t.audioBuffer?.duration || 0));
+        const maxDuration = Math.max(...playableTracks.map((t) => t.audioBuffer?.duration || 0));
 
-        setTimeout(() => {
-            setIsPlaying(false);
+        stopTimeoutRef.current = setTimeout(() => {
+            stopAllAudio();
         }, maxDuration * 1000);
     }
 
-    const tracksToAnalyze = tracks.filter((track) => track.audioBuffer !== null && !track.isIntentionalDelay);
+    const stopAllAudio = () => {
+        if (stopTimeoutRef.current) {
+            clearTimeout(stopTimeoutRef.current);
+            stopTimeoutRef.current = null;
+        }
+
+        sourcesRef.current.forEach((source) => {
+            try { source.stop(); } catch { }
+        });
+
+        sourcesRef.current = [];
+        setIsPlaying(false);
+    }
+
 
     const onsets = tracksToAnalyze.map((track) => detectOnset(track.audioBuffer!));
 
@@ -378,8 +398,8 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                                                 type='button'
                                                 onClick={() => toggleIntentionalDelay(track.id)}
                                                 className={`self-start text-xs px-2.5 py-1 rounded-md transition flex items-center gap-1.5 hover:cursor-pointer ${track.isIntentionalDelay
-                                                        ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/30 font-medium'
-                                                        : 'text-card-text/60 hover:text-card-text border border-transparent'
+                                                    ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/30 font-medium'
+                                                    : 'text-card-text/60 hover:text-card-text border border-transparent'
                                                     }`}
                                             >
                                                 {track.isIntentionalDelay ? '✓ Entrada intencional' : '+ Marcar como atraso intencional'}
@@ -410,7 +430,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                             </button>
                         )
                         }
-                        {tracksToAnalyze.length > 0 && (
+                        {playableTracks.length > 0 && (
                             <button
                                 type='button'
                                 onClick={togglePlayAll}

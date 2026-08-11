@@ -4,6 +4,7 @@ export interface AudioTrack {
     id: string;
     label: string;
     url?: string;
+    isIntentionalDelay?: boolean;
 }
 
 export interface Song {

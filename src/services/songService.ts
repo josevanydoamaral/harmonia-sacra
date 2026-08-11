@@ -9,6 +9,8 @@ export interface RawTrackData {
   label: string;
   file: File | null;
   existingUrl?: string | null;
+  // Indicates if user confirmed time lag as intentional
+  isIntentionalDelay?: boolean;
 }
 
 export interface RawSongData {

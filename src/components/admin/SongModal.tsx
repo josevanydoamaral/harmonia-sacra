@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
-import { detectOnset, fileToAudioBuffer, padAudioBuffer } from '../../utils/audioAnalysis';
+import { detectOnset, fileToAudioBuffer, padAudioBuffer, urlToAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 import type { RawSongData } from '../../services/songService';
 import type { Song } from '../../types/song';
@@ -11,6 +11,7 @@ interface DraftTrack {
     file: File | null;
     url?: string | null;
     audioBuffer: AudioBuffer | null;
+    isIntentionalDelay?: boolean;
 }
 
 interface SongModalProps {
@@ -42,6 +43,8 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
+        let isCancelled = false;
+
         if (initialData) {
             setTitle(initialData.title);
             setComposer(initialData.composer);
@@ -55,19 +58,31 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                     file: null,
                     audioBuffer: null,
                     url: track.url,
+                    isIntentionalDelay: track.isIntentionalDelay ?? false
                 })) ?? []
             setTracks(tr)
 
+            initialData.tracks?.forEach(async (track) => {
+                if (track.url) {
+                    try {
+                        const buffer = await urlToAudioBuffer(track.url);
+                        setTracks((prevTracks) =>
+                            prevTracks.map((t) => (t.id === track.id ? { ...t, audioBuffer: buffer } : t))
+                        );
+                    } catch (err) {
+                        console.error(`Erro ao carregar buffer da faixa ${track.label}`, err)
+                    }
+                }
+            });
+
         } else {
-            setTitle('');
-            setComposer('');
-            setCategory('');
-            setExistingUrl(null);
-            setPdfFile(null);
-            setTracks([])
+            resetForm()
         }
 
-        return () => { }
+        return () => {
+            isCancelled = true;
+        }
+
     }, [initialData, isOpen])
 
     const handleAddTrack = () => {
@@ -113,9 +128,9 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     }
 
     const handleAlignTracks = () => {
-        if (loadedTracks.length < 2) return;
+        if (tracksToAnalyze.length < 2) return;
 
-        const maxOnset = Math.max(...loadedTracks.map((t) => detectOnset(t.audioBuffer!)));
+        const maxOnset = Math.max(...tracksToAnalyze.map((t) => detectOnset(t.audioBuffer!)));
 
         setTracks((prevTracks) =>
             prevTracks.map((track) => {
@@ -151,8 +166,9 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                     id: t.id,
                     label: t.label,
                     file: t.file,
-                    existingUrl: t.url
-                }))
+                    existingUrl: t.url,
+                    isIntentionalDelay: t.isIntentionalDelay
+                })),
             }
 
             await onSave(songData);
@@ -178,18 +194,17 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         setComposer('');
         setCategory('');
         setPdfFile(null);
+        setExistingUrl(null);
         setTracks([]);
         setErrorMessage(null);
         setIsPlaying(false);
     };
 
-    const isFormValid =
-        title.trim().length > 0 &&
-        composer.trim().length > 0 &&
-        category.trim().length > 0 &&
-        pdfFile !== null && validTracksCount >= 1 &&
-        tracks.length >= 1 &&
-        tracks.every(t => t.file !== null && t.label.trim().length > 0);
+    const toggleIntentionalDelay = (id: string) => {
+        setTracks((prevTracks) =>
+            prevTracks.map((t) => (t.id === id ? { ...t, isIntentionalDelay: !t.isIntentionalDelay } : t))
+        );
+    }
 
     const togglePlayAll = () => {
         if (isPlaying) {
@@ -202,7 +217,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
             return;
         }
 
-        if (loadedTracks.length === 0) return;
+        if (tracksToAnalyze.length === 0) return;
 
         if (!audioCtxRef.current) {
             audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -216,7 +231,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
         const newSources: AudioBufferSourceNode[] = [];
 
-        loadedTracks.forEach((track) => {
+        tracksToAnalyze.forEach((track) => {
             if (!track.audioBuffer) return;
 
             const source = ctx.createBufferSource();
@@ -231,16 +246,16 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         newSources.forEach((source) => source.start(starTime));
         setIsPlaying(true)
 
-        const maxDuration = Math.max(...loadedTracks.map((t) => t.audioBuffer?.duration || 0));
+        const maxDuration = Math.max(...tracksToAnalyze.map((t) => t.audioBuffer?.duration || 0));
 
         setTimeout(() => {
             setIsPlaying(false);
         }, maxDuration * 1000);
     }
 
-    const loadedTracks = tracks.filter((track) => track.audioBuffer !== null);
+    const tracksToAnalyze = tracks.filter((track) => track.audioBuffer !== null && !track.isIntentionalDelay);
 
-    const onsets = loadedTracks.map((track) => detectOnset(track.audioBuffer!));
+    const onsets = tracksToAnalyze.map((track) => detectOnset(track.audioBuffer!));
 
     const maxOnset = onsets.length > 0 ? Math.max(...onsets) : 0;
     const minOnset = onsets.length > 0 ? Math.min(...onsets) : 0;
@@ -249,14 +264,23 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
 
     const isMisaligned = maxDelta > 0.15;
 
-    const alignmentStatusText = loadedTracks.length < 2
+    const isFormValid =
+        title.trim().length > 0 &&
+        composer.trim().length > 0 &&
+        category.trim().length > 0 &&
+        (pdfFile !== null || existingUrl !== null) &&
+        tracks.length >= 1 &&
+        tracks.every(t => (t.file !== null || !!t.url) && t.label.trim().length > 0) &&
+        !isMisaligned;
+
+    const alignmentStatusText = tracksToAnalyze.length < 2
         ? `${tracks.length} vozes adicionadas - Alinhamento disponível a partir de 2 faixas`
         : isMisaligned
             ? `Aviso: Desalinhamento detetado (~${Math.round(maxDelta * 1000)}ms)`
             : 'Vozes perfeitamente alinhadas';
 
 
-    const alignmentStatusColor = loadedTracks.length < 2
+    const alignmentStatusColor = tracksToAnalyze.length < 2
         ? 'text-card-text/50'
         : isMisaligned
             ? 'text-amber-600'
@@ -270,7 +294,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
             <div className='flex flex-col max-w-3xl w-full max-h-[90vh] bg-base-surface border border-border-subtle rounded-3xl shadow-2xl p-8'>
                 <header>
                     <div className="flex items-center justify-between mb-8">
-                        <h2 className='text-2xl text-accent-gold font-serif'>Adicionar Cântico</h2>
+                        <h2 className='text-2xl text-accent-gold font-serif'>{!initialData ? 'Adicionar Cântico' : `Editar: ${initialData.title}`}</h2>
                         <button onClick={handleClose}><X className='text-text-main hover:cursor-pointer hover:text-red-400 transition' width={40} height={40} /></button>
                     </div>
                 </header>
@@ -293,10 +317,17 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                     <div className='flex items-center justify-between gap-4 mb-4 bg-card-surface p-4 rounded-xl border border-dashed border-border-subtle hover:border-accent-gold transition'>
                         <div className='flex items-center justify-between gap-3'>
                             <FileUp className='text-accent-gold' />
-                            <span className='text-card-text/50'>{pdfFile ? pdfFile.name : "Clicar ou arrastar o ficheiro .pdf"}</span>
+                            <span className='text-card-text/50'>
+                                {pdfFile
+                                    ? pdfFile.name
+                                    : existingUrl
+                                        ? "Partitura existente carregada (.pdf)."
+                                        : "Clicar ou arrastar o ficheiro .pdf"
+                                }
+                            </span>
                         </div>
                         <div className='flex items-center justify-end'>
-                            <label className='text-accent-gold font-medium hover:cursor-pointer hover:underline'>{pdfFile ? "Substituir" : "Procurar"}
+                            <label className='text-accent-gold font-medium hover:cursor-pointer hover:underline'>{pdfFile || existingUrl ? "Substituir" : "Procurar"}
                                 <input
                                     type='file'
                                     accept='application/pdf'
@@ -343,6 +374,16 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                                     {track.audioBuffer &&
                                         <div className='mt-3 w-full'>
                                             <WaveformVisualizer audioBuffer={track.audioBuffer} />
+                                            <button
+                                                type='button'
+                                                onClick={() => toggleIntentionalDelay(track.id)}
+                                                className={`self-start text-xs px-2.5 py-1 rounded-md transition flex items-center gap-1.5 hover:cursor-pointer ${track.isIntentionalDelay
+                                                        ? 'text-accent-gold bg-accent-gold/10 border border-accent-gold/30 font-medium'
+                                                        : 'text-card-text/60 hover:text-card-text border border-transparent'
+                                                    }`}
+                                            >
+                                                {track.isIntentionalDelay ? '✓ Entrada intencional' : '+ Marcar como atraso intencional'}
+                                            </button>
                                         </div>
                                     }
                                 </div>
@@ -358,7 +399,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                         <span className={`${alignmentStatusColor}`}>
                             {alignmentStatusText}
                         </span>
-                        {loadedTracks.length >= 2 && isMisaligned && (
+                        {tracksToAnalyze.length >= 2 && isMisaligned && (
                             <button
                                 type='button'
                                 onClick={handleAlignTracks}
@@ -369,7 +410,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                             </button>
                         )
                         }
-                        {loadedTracks.length > 0 && (
+                        {tracksToAnalyze.length > 0 && (
                             <button
                                 type='button'
                                 onClick={togglePlayAll}

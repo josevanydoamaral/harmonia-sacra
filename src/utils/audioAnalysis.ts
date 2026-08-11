@@ -48,3 +48,10 @@ export const padAudioBuffer = (buffer: AudioBuffer, padSeconds: number): AudioBu
 
     return newBuffer
 }
+
+export const urlToAudioBuffer = async (url: string): Promise<AudioBuffer> => {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    return await audioCtx.decodeAudioData(arrayBuffer);
+}

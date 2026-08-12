@@ -8,6 +8,8 @@ import Login from './pages/Login'
 import AdminLayout from './components/layouts/AdminLayout'
 import AudioTestPage from './pages/AudioTestPage'
 import { GuestRoute } from './components/GuestRoute'
+import { ToastProvider } from './context/ToastContext'
+import ToastContainer from './components/ui/ToastContainer'
 
 
 function App() {
@@ -18,11 +20,9 @@ function App() {
       <Route element={<Layout />}>
         <Route path='/cantico/:id' element={<SongDetail />} />
 
-        <Route path='/test' element={<AudioTestPage />} />
-
       </Route>
 
-      <Route path='/login' index element={
+      <Route path='/login' element={
         <GuestRoute>
           <Login />
         </GuestRoute>}
@@ -47,7 +47,11 @@ function App() {
   const router = createBrowserRouter(routes);
 
   return (
-    <RouterProvider router={router} />
+    <ToastProvider>
+      <ToastContainer />
+
+      <RouterProvider router={router} />
+    </ToastProvider>
   )
 }
 

@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import TrackControl from './TrackControl'
-import { Link, useParams } from 'react-router-dom'
+import {Link, useParams} from 'react-router-dom'
 import type { AudioTrack, Song } from '../types/song';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import MasterControl from './MasterControl';
 import { useAudioEngine } from '../hooks/useAudioEngine';
+import {logger} from "../utils/logger.ts";
 
 
 const SongDetail = () => {
@@ -18,6 +19,9 @@ const SongDetail = () => {
 
 
   const [soloVoice, setSoloVoice] = useState<string | null>(null);
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [notFounded, setNotFounded] = useState(false);
 
   const {
     duration,
@@ -40,8 +44,12 @@ const SongDetail = () => {
   useEffect(() => {
     // Async function to fetch songs from firebase
     const fetchSong = async () => {
+      setLoading(true);
       // Check if id exists
-      if (!id) return;
+      if (!id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const docRef = doc(db, "songs", id);
@@ -66,24 +74,40 @@ const SongDetail = () => {
 
           }
 
+          logger.info('SongDetail', `Cântico carregado ${songData.title}`)
+
         } else {
-          console.warn("Cântico não encontrado no banco de dados.");
+          logger.warn('SongDetail', `Cântico com o id ${id} não encontrado no banco de dados.`);
+          setNotFounded(true)
         }
       } catch (error) {
-        console.error("Erro ao procurar o cântico no Firestore: ", error);
+        logger.error('SongDetail',"Erro ao procurar o cântico no Firestore: ", error);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchSong()
+
+    void fetchSong()
 
   }, [id])
 
-  if (!song) return <div className="p-10 text-white">A carregar cântico...</div>;
+  if (loading) return <div className="p-10 text-text-main/60">A carregar cântico...</div>;
+  if (notFounded || !song) {
+    return (
+        <div className="min-h-screen bg-base-surface flex flex-col items-center justify-center p-6 text-center">
+          <p className="text-xl text-text-main font-semibold mb-2">Cântico não encontrado</p>
+          <Link to="/" className="text-accent-gold underline text-sm hover:opacity-80 transition">
+            Voltar para a página inicial
+          </Link>
+        </div>
+    );
+  }
 
   return (
 
     <div className='min-h-screen flex flex-col lg:flex-row'>
 
-      <div className="w-full lg:w-1/2 h-[650px] lg:h-screen p-4 shrink-0">
+      <div className="w-full lg:w-1/2 h-162.5 lg:h-screen p-4 shrink-0">
         <iframe
           className='w-full h-full bg-white rounded-lg shadow-2xl border border-accent-gold/20'
           src={song.pdfUrl || ""}

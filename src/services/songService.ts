@@ -1,6 +1,7 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../lib/firebase";
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import {logger} from "../utils/logger.ts";
 
 
 
@@ -23,7 +24,7 @@ export interface RawSongData {
 }
 
 export const createSong = async (rawData: RawSongData): Promise<string> => {
-    
+    logger.info('SongService', 'A iniciar upload e criação de cântico');
     if (!rawData.pdfFile) {
         throw new Error("O ficheiro PDF é obrigatório para criar um cântico.")
     }
@@ -68,8 +69,10 @@ export const createSong = async (rawData: RawSongData): Promise<string> => {
 
 
 export const updateSong = async (id: string, songData: RawSongData): Promise<void> => {
+    logger.info('SongService', `A atualizar cântico: ${id}`);
+
     let pdfUrl = songData.existingPdfUrl || null;
-    let updatedTracks = await Promise.all(
+    const updatedTracks = await Promise.all(
         songData.tracks.map(async (track) => {
             if (track.file) {
                 const storageRef = ref(storage, `tracks/${Date.now()}_${track.file.name}`)
@@ -78,7 +81,11 @@ export const updateSong = async (id: string, songData: RawSongData): Promise<voi
                 const newUrl = await getDownloadURL(storageRef);
                 
                 if (track.existingUrl) {
-                    await deleteObject(ref(storage, track.existingUrl));
+                    try {
+                        await deleteObject(ref(storage, track.existingUrl));
+                    } catch (error) {
+                        logger.warn('SongService', 'Ficheiro de áudio antigo não encontrado para remoção', error);
+                    }
                 }
 
                 return {
@@ -99,7 +106,12 @@ export const updateSong = async (id: string, songData: RawSongData): Promise<voi
         pdfUrl = newUrl;
 
         if (songData.existingPdfUrl) {
-            await deleteObject(ref(storage, songData.existingPdfUrl));
+            try {
+                await deleteObject(ref(storage, songData.existingPdfUrl));
+
+            } catch (error) {
+                logger.warn('SongService', 'Ficheiro pdf antigo não encontrado para remoção', error);
+            }
         }
     }
     

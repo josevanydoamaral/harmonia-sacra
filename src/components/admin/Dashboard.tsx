@@ -1,5 +1,5 @@
 import { SquarePen, Trash2 } from 'lucide-react'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useSongs } from '../../hooks/useSongs'
 import { getAudioStatus } from '../../utils/songUtils';
 import { deleteDoc, doc } from 'firebase/firestore';
@@ -10,6 +10,9 @@ import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import AccountsPanel from './AccountsPanel';
 import type { Song } from '../../types/song';
+import {logger} from "../../utils/logger.ts";
+import {useToast} from "../../hooks/useToast.ts";
+import {getFriendlyErrorMessage} from "../../utils/errorMapping.ts";
 
 
 const Dashboard = () => {
@@ -20,10 +23,10 @@ const Dashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState<Song | null>(null);
 
-    const [isUploading, setIsUploading] = useState(false);
+    const { showSuccess, showError } = useToast()
 
-    if (loading) return "A carregar";
-    if (error) return alert("Erro ao buscar cânticos");
+    if (loading) return <div className='p-8 text-center text-text-main/60'>A carregar cânticos...</div>;
+    if (error) return <div className='p-8 text-center text-red-400'>Erro ao carregar cânticos. Tente recarregar a página.</div>;
 
     const totalSongs = songs.length;
     const incompleteSongs = songs.filter(s => getAudioStatus(s) !== "Completo").length
@@ -32,39 +35,21 @@ const Dashboard = () => {
     const handleDelete = async (id: string): Promise<void> => {
         if (window.confirm("Tem a certeza que quer eliminar este cântico?")) {
             try {
-                await deleteDoc(doc(db, 'songs', id));
-                window.alert("Cântico apagado com sucesso");
+                await deleteDoc(doc(db, 'songs', id))
+                logger.info('DashBoard', `Cântico ${id} eliminado com sucesso`);
+                showSuccess("Cântico apagado com sucesso");
             } catch (error) {
-                window.alert("Erro ao apagar cântico.");
+                logger.error('Dashboard', 'Erro ao eliminar cântico', error);
+                showError(getFriendlyErrorMessage(error));
             }
         }
     }
 
     const handleSaveSong = async (songData: RawSongData) => {
         if (isEditing) {
-            setIsUploading(true)
-
-            try {
-                await updateSong(isEditing.id, songData)
-                alert("Cântico atualizado com sucesso");
-            } catch (error) {
-                alert("Erro ao atualizar cântico no servidor.");
-            } finally {
-                setIsUploading(false);
-            }
-
+            await updateSong(isEditing.id, songData)
         } else {
-            setIsUploading(true)
-
-            try {
-                const newSongId = await createSong(songData)
-                alert("Cântico adicionado com sucesso!")
-            } catch (error) {
-                console.error(error)
-                alert("Erro ao criar cântico no servidor.")
-            } finally {
-                setIsUploading(false)
-            }
+            await createSong(songData)
         }
     }
 

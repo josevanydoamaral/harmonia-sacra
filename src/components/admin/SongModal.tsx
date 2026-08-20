@@ -4,6 +4,10 @@ import { audioBufferToFile, detectOnset, fileToAudioBuffer, padAudioBuffer, urlT
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';
 import type { RawSongData } from '../../services/songService';
 import type { Song } from '../../types/song';
+import {logger} from "../../utils/logger.ts";
+import {useToast} from "../../hooks/useToast.ts";
+import {getFriendlyErrorMessage} from "../../utils/errorMapping.ts";
+
 
 interface DraftTrack {
     id: string;
@@ -40,7 +44,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     const stopTimeoutRef = useRef<number | null>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const { showSuccess, showError} = useToast()
 
     const playableTracks = tracks.filter((track) => track.audioBuffer !== null);
 
@@ -168,8 +172,6 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         if (!isFormValid || isSubmitting) return;
 
         setIsSubmitting(true);
-        setErrorMessage(null);
-
         try {
             const songData = {
                 title,
@@ -187,12 +189,14 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
             }
 
             await onSave(songData);
+            logger.info('SongModal', 'Cântico guardado com sucesso.');
+            showSuccess('Cântico guardado com sucesso.');
             resetForm();
             onClose();
 
         } catch (error) {
-            console.error(error)
-            setErrorMessage("Erro ao guardar o cântico. Tente novamente!");
+            logger.error('SongModal', 'Erro ao guardar o cântico.', error);
+            showError(getFriendlyErrorMessage(error))
         } finally {
             setIsSubmitting(false);
         }
@@ -211,7 +215,6 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         setPdfFile(null);
         setExistingUrl(null);
         setTracks([]);
-        setErrorMessage(null);
         stopAllAudio()
     };
 
@@ -271,7 +274,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
         }
 
         sourcesRef.current.forEach((source) => {
-            try { source.stop(); } catch { }
+            try { source.stop(); } catch { /* empty */ }
         });
 
         sourcesRef.current = [];
@@ -445,9 +448,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
                         )
                         }
                     </div>
-                    {errorMessage &&
-                        <p className='text-red-400 text-sm'>{errorMessage}</p>
-                    }
+
                     <button
                         onClick={handleSubmit}
                         disabled={!isFormValid}

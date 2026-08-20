@@ -5,7 +5,7 @@ function prefix(context: string) {
 export const logger = {
     info(context: string, message: string) {
         if (!import.meta.env.DEV) return;
-
+        
         console.log(`${prefix(context)} - ${message}`);
     },
 

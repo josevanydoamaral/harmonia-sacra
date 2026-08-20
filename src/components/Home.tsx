@@ -1,38 +1,24 @@
-import { useEffect, useState } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { useState } from 'react'
 import backgroundImage from '../assets/hero-img.png'
 import Header from './Header'
 import SearchBar from './SearchBar'
 import SongCard from './SongCard'
 import { motion } from 'framer-motion'
-import { db } from '../lib/firebase'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import type { Song } from '../types/song'
+import {useSongs} from "../hooks/useSongs.ts";
 
 const Home = () => {
-  const [search, setSearch] = useState("")
-  const [songs, setSongs] = useState<Song[]>([])
+    const [search, setSearch] = useState("")
+    const { songs, loading, error } = useSongs()
 
-  useEffect(() => {
-    const songsCollection = collection(db, "songs");
+    const filteredSongs = songs.filter(fs =>
+      fs.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      || fs.composer.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    )
 
-    const unsubscribe = onSnapshot(songsCollection,
-      (snapshot) => {
+    if (loading) return <div className='p-8 text-center text-text-main/60'>A carregar cânticos...</div>;
+    if (error) return <div className='p-8 text-center text-red-400'>Erro ao carregar cânticos. Tente recarregar a página.</div>;
 
-        const songsData = snapshot.docs.map(
-          doc => ({ id: doc.id, ...doc.data() } as Song))
-        setSongs(songsData)
-      },
-      (error) => { console.error("Erro no Firebase: ", error) })
-
-    return () => unsubscribe();
-  }, [])
-
-  const {user, profile, loading } = useAuth();
-  console.log("Sessão ativa: ", { user, profile, loading })
-
-  const filteredSongs = songs.filter(fs => fs.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
   return (
     <div className='relative min-h-screen bg-base-surface'>
       <div style={{ backgroundImage: `url(${backgroundImage})` }} className='absolute top-0 left-0 w-full h-100 bg-no-repeat bg-fixed bg-center bg-cover opacity-50'>
@@ -45,11 +31,15 @@ const Home = () => {
         <SearchBar value={search} onChange={setSearch} />
 
         <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-30 px-6 items-start transition-all duration-1000">
-          {filteredSongs.map(song =>
-            <Link key={song.id} to={`cantico/${song.id}`}>
-              <SongCard id={song.id} title={song.title} composer={song.composer} category={song.category} tracks={song.tracks} />
-            </Link>
-          )}
+          { filteredSongs.length === 0
+              ? <div className='p-8 text-center text-text-main/60'>Nenhum cântico encontrado.</div>
+
+              : filteredSongs.map(song =>
+                <Link key={song.id} to={`cantico/${song.id}`}>
+                  <SongCard id={song.id} title={song.title} composer={song.composer} category={song.category} tracks={song.tracks} />
+                </Link>
+            )
+          }
         </motion.div>
 
 

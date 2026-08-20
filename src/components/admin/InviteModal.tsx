@@ -1,5 +1,8 @@
 import { X } from 'lucide-react';
 import React, { useState } from 'react'
+import {logger} from "../../utils/logger.ts";
+import {useToast} from "../../hooks/useToast.ts";
+import {getFriendlyErrorMessage} from "../../utils/errorMapping.ts";
 
 interface InviteEditorModalProps {
   isOpen: boolean;
@@ -10,17 +13,21 @@ interface InviteEditorModalProps {
 const InviteModal = ({ isOpen, onClose, onInvite}: InviteEditorModalProps) => {
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const { showError, showSuccess} = useToast()
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         try {
             e.preventDefault()
             setIsSubmitting(true);
             await onInvite(email);
+            logger.info('InviteModal', 'Email enviado com sucesso.');
+            showSuccess('Email enviado com sucesso.');
             setEmail('');
             onClose();
         } catch (error) {
-            setErrorMessage("Erro ao enviar convite");
+            logger.error('InviteModal', 'Erro ao enviar email de reset de password', error);
+            showError(getFriendlyErrorMessage(error));
         } finally {
             setIsSubmitting(false);
         }
@@ -52,10 +59,6 @@ const InviteModal = ({ isOpen, onClose, onInvite}: InviteEditorModalProps) => {
             
                 </section>
                 <footer>
-                 
-                    {errorMessage &&
-                        <p className='text-red-400 text-sm'>{errorMessage}</p>
-                    }
                     <button
                         type="submit"
                         disabled={!email || isSubmitting}

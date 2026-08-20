@@ -1,18 +1,22 @@
-import { SquarePen, Trash2 } from 'lucide-react';
-import React, { useState } from 'react'
+import { Trash2 } from 'lucide-react';
+import { useState } from 'react'
 import InviteModal from './InviteModal';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { db, secondaryAuth } from '../../lib/firebase';
-import type { UserProfile, UserRole } from '../../types/auth';
-import { collection, deleteDoc, doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
+import type { UserRole } from '../../types/auth';
+import { deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAccounts } from '../../hooks/useAccounts';
+import {useToast} from "../../hooks/useToast.ts";
+import {logger} from "../../utils/logger.ts";
+import {getFriendlyErrorMessage} from "../../utils/errorMapping.ts";
 
 
 
-const AccountsPanel = ({ }) => {
+const AccountsPanel = () => {
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
     const { users, error, loading } = useAccounts()
+    const { showSuccess, showError } = useToast()
 
     const handleInvite = async (email: string, role: UserRole = 'editor') => {
         try {
@@ -32,11 +36,12 @@ const AccountsPanel = ({ }) => {
             await setDoc(docRef, data)
 
             await sendPasswordResetEmail(secondaryAuth, email);
-            await signOut(secondaryAuth);
 
-        } catch (error) {
-            console.error(error)
-            throw new Error("Erro ao enviar convite");
+
+
+        } finally {
+            await signOut(secondaryAuth);
+            logger.info('AccountsPanel', 'Término de sessão efetuado com sucesso.');
         }
     }
 
@@ -44,10 +49,11 @@ const AccountsPanel = ({ }) => {
         if (window.confirm("Tem a certeza que deseja eliminar o utilizador?")) {
             try {
                 await deleteDoc(doc(db, 'users', uuid));
-                window.alert("Utilizador eliminado com sucesso.")
+                logger.info('AccountsPanel', `Utilizador ${ uuid } eliminado com sucesso.`);
+                showSuccess("Utilizador eliminado com sucesso.")
             } catch(error) {
-                window.alert("Erro ao eliminar cântico. Tente Novamente em breve.");
-                console.log("Erro: ", error);
+                logger.error('AccountPanel', "Erro ao eliminar utilizador.", error);
+                showError(getFriendlyErrorMessage(error));
             }
         }
     }

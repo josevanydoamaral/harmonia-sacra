@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FileMusic, FileUp, Upload, X } from 'lucide-react';
 import { audioBufferToFile, detectOnset, fileToAudioBuffer, padAudioBuffer, urlToAudioBuffer } from '../../utils/audioAnalysis';
 import { WaveformVisualizer } from '../audio/WaveformVisualizer';

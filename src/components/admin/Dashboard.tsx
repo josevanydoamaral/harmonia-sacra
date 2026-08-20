@@ -53,10 +53,6 @@ const Dashboard = () => {
         }
     }
 
-
-
-
-
     return (
         <>
             <div className='flex gap-2 p-1 bg-card-surface border border-border-subtle rounded-xl w-fit mb-6'>
@@ -137,26 +133,18 @@ const Dashboard = () => {
                                                     </tr>
 
                                                     : songs.map((song) => (
-                                                        <tr key={song.id} className="
-                            border-b 
-                            border-border-subtle/50 
-                            last:border-b-0 
-                            hover:bg-white/5 t
-                            ransition">
+                                                        <tr key={song.id} className="border-b border-border-subtle/50 last:border-b-0 hover:bg-white/5 transition">
 
                                                             <td className='p-4'>
 
-                                                                <span className='
-                                    font-semibold 
-                                    text-text-main'>
+                                                                <span className='font-semibold text-text-main'>
                                                                     {song.title} - {song.composer}
                                                                 </span>
 
                                                             </td>
 
                                                             <td className='p-4'>
-                                                                <span className='
-                                    text-text-main/60'>
+                                                                <span className='text-text-main/60'>
                                                                     {song.category}
                                                                 </span>
                                                             </td>
@@ -175,9 +163,7 @@ const Dashboard = () => {
                                                                                 : 'text-rose-400';
 
                                                                     return (
-                                                                        <span className={`
-                                                        text-sm 
-                                                        font-medium ${colorClass}`}>
+                                                                        <span className={`text-sm font-medium ${colorClass}`}>
                                                                             {status}
                                                                         </span>
                                                                     )

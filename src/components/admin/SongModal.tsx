@@ -27,11 +27,11 @@ interface SongModalProps {
 
 const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => {
 
-    const [title, setTitle] = useState('')
-    const [composer, setComposer] = useState('')
-    const [category, setCategory] = useState('')
+    const [title, setTitle] = useState('');
+    const [composer, setComposer] = useState('');
+    const [category, setCategory] = useState('');
 
-    const [pdfFile, setPdfFile] = useState<File | null>(null)
+    const [pdfFile, setPdfFile] = useState<File | null>(null);
 
     const [tracks, setTracks] = useState<DraftTrack[]>([]);
 
@@ -44,7 +44,7 @@ const SongModal = ({ isOpen, onClose, onSave, initialData }: SongModalProps) => 
     const stopTimeoutRef = useRef<number | null>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { showSuccess, showError} = useToast()
+    const { showSuccess, showError} = useToast();
 
     const playableTracks = tracks.filter((track) => track.audioBuffer !== null);
 

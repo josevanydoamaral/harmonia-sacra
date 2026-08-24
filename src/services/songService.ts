@@ -23,6 +23,10 @@ export interface RawSongData {
   tracks: RawTrackData[];
 }
 
+export const storageMetadata = {
+    cacheControl: "public, max-age=31536000, immutable",
+};
+
 export const createSong = async (rawData: RawSongData): Promise<string> => {
     logger.info('SongService', 'A iniciar upload e criação de cântico');
     if (!rawData.pdfFile) {
@@ -30,7 +34,7 @@ export const createSong = async (rawData: RawSongData): Promise<string> => {
     }
     // PDF Upload
     const pdfRef = ref(storage, `scores/${Date.now()}_${rawData.pdfFile.name}`);
-    await uploadBytes(pdfRef, rawData.pdfFile);
+    await uploadBytes(pdfRef, rawData.pdfFile, storageMetadata);
     const pdfUrl = await getDownloadURL(pdfRef);
 
     // Audio Tracks Upload
@@ -41,7 +45,7 @@ export const createSong = async (rawData: RawSongData): Promise<string> => {
             }
 
             const audioRef = ref(storage, `tracks/${Date.now()}_${track.file.name}`);
-            await uploadBytes(audioRef, track.file);
+            await uploadBytes(audioRef, track.file, storageMetadata);
             const url = await getDownloadURL(audioRef);
 
             return {
@@ -76,7 +80,7 @@ export const updateSong = async (id: string, songData: RawSongData): Promise<voi
         songData.tracks.map(async (track) => {
             if (track.file) {
                 const storageRef = ref(storage, `tracks/${Date.now()}_${track.file.name}`)
-                await uploadBytes(storageRef, track.file)
+                await uploadBytes(storageRef, track.file, storageMetadata);
 
                 const newUrl = await getDownloadURL(storageRef);
                 
@@ -100,8 +104,8 @@ export const updateSong = async (id: string, songData: RawSongData): Promise<voi
     )
 
     if (songData.pdfFile) {
-        const storageRef = ref(storage, `pdfs/${id}_${songData.pdfFile?.name}`)
-        await uploadBytes(storageRef, songData.pdfFile)
+        const storageRef = ref(storage, `scores/${Date.now()}_${songData.pdfFile?.name}`)
+        await uploadBytes(storageRef, songData.pdfFile, storageMetadata)
         const newUrl = await getDownloadURL(storageRef);
         pdfUrl = newUrl;
 

@@ -26,7 +26,7 @@ export const useAudioEngine = (tracks?: AudioTrack[]) => {
             setIsLoaded(true)
         }
 
-        loadVoices()
+        void loadVoices()
 
         
 
